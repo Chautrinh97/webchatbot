@@ -9,7 +9,7 @@ import {
 import { useAppStore } from '@/app/store/app.store';
 import { Search } from './Search';
 import { useEffect, useRef  } from 'react';
-import { PersonalOptionButton } from './PersonalOptionButton';
+import { SidebarOptionButton } from './SidebarOptionButton';
 import { Conversations } from './Conversations';
 import Link from 'next/link';
 
@@ -120,7 +120,7 @@ export const SideBar: React.FC = ({ }) => {
                         <div><TbFileExport size={18} /></div>
                         <span>Xuất dữ liệu hội thoại</span>
                      </button>
-                     <PersonalOptionButton />
+                     <SidebarOptionButton />
                   </div>
                </div>
             )}

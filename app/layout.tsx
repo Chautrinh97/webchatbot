@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import {
-  Roboto_Mono,
+  Montserrat,
 } from "next/font/google";
 import "./global.css";
 import { ThemeProvider } from "next-themes";
 import ToastProvider from "./providers/ToastProvider";
 import { NextUI } from "./providers/NextUIProvider";
 
-const inter = Roboto_Mono({
+const inter = Montserrat({
   subsets: ["vietnamese"],
-  weight: "400",
+  weight: "500",
   display: "swap"
 });
 
@@ -36,13 +36,13 @@ export default function RootLayout({
         </link>
       </head>
       <body className={inter.className} suppressHydrationWarning={true}>
-          <ToastProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-              <NextUI>
-                {children}
-              </NextUI>
-            </ThemeProvider>
-          </ToastProvider>
+        <ToastProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <NextUI>
+              {children}
+            </NextUI>
+          </ThemeProvider>
+        </ToastProvider>
       </body>
     </html>
   );

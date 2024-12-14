@@ -1,23 +1,26 @@
-import { GroupSidebar } from '@/components/Manage/GroupSidebar';
-import { GroupNavbar } from '@/components/Manage/GroupNavbar';
+import { ManageSidebar } from '@/components/Manage/ManageSidebar';
+import { ManageNavbar } from '@/components/Manage/ManageNavbar';
 import type { Metadata } from 'next'
+import UserProvider from '../providers/UserProvider';
 
 export const metadata: Metadata = {
-   title: 'Group management',
+   title: 'Trang quản lý',
 }
-const GroupLayout = ({ children }: { children: React.ReactNode }) => {
+const ManageLayout = ({ children }: { children: React.ReactNode }) => {
    return (
       <div className="flex h-screen w-screen flex-col text-sm text-black dark:text-white">
-         <GroupNavbar />
-         <div className="flex h-full w-full sm:pt-0">
-            <GroupSidebar />
-            <div className="flex flex-1">
-               <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#212121]">
-                  {children}
+         <UserProvider>
+            <ManageNavbar />
+            <div className="flex h-full w-full">
+               <ManageSidebar />
+               <div className="flex flex-auto">
+                  <div className="relative flex-auto overflow-auto bg-white dark:bg-[#212121]">
+                     {children}
+                  </div>
                </div>
             </div>
-         </div>
+         </UserProvider>
       </div>
    );
 }
-export default GroupLayout;
+export default ManageLayout;

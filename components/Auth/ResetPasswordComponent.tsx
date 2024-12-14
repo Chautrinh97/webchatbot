@@ -61,8 +61,8 @@ export const ResetPasswordComponent = () => {
             <div className="w-80 font-bold uppercase text-xl text-center pb-6 text-neutral-800">
                <span>Thiết lập mật khẩu mới</span>
             </div>
-            <div className=" flex flex-col items-center w-80 px-10 rounded-sm">
-               <span className="text-pretty text-center">Vui lòng nhập mật khẩu mới của bạn.</span>
+            <div className=" flex flex-col items-center w-80 px-10 rounded-sm gap-2">
+               <span className="text-pretty text-center text-neutral-800">Vui lòng nhập mật khẩu mới của bạn.</span>
                <form onSubmit={handleSubmit(onSubmit)}>
                   <div className="relative mt-2">
                      <input {...register("password")}

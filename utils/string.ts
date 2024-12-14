@@ -1,3 +1,5 @@
+import { UserRoleConstant } from "./constant";
+
 export const generateRandomString = (length: number): string => {
    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
    let result = '';
@@ -9,3 +11,15 @@ export const generateRandomString = (length: number): string => {
 
    return result;
 }
+
+export const validateSearchParams = (params: any) => {
+   const { pageNumber, pageLimit } = params;
+
+   const isNumberOrNull = (value: any) =>
+      value === null || (!isNaN(parseInt(value)) && parseInt(value) > 0);
+
+   return {
+      pageNumber: isNumberOrNull(pageNumber) ? parseInt(pageNumber) : 1,
+      pageLimit: isNumberOrNull(pageLimit) ? parseInt(pageLimit) : 10,
+   };
+};

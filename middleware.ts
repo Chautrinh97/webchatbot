@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import axiosInstance from "./app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
-const privatePaths = ['/chat', '/group'];
+const privatePaths = ['/manage'];
 const authPaths = ['/auth'];
 
 export async function middleware(req: NextRequest) {
@@ -55,6 +55,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-   matcher: ['/chat', '/group','/group/(.*)',
+   matcher: ['/chat', '/manage','/manage/(.*)',
       '/auth/confirm-email', '/auth/login', '/auth/register', '/auth/complete-confirm', '/auth/reset-password']
 }

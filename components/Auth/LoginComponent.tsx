@@ -4,13 +4,14 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { LoginFormSchema } from "@/types/validation";
 import Link from "next/link";
 import { TbAlertCircle } from "react-icons/tb";
-import { GoogleIcon } from "@/app/assets/google";
 import { z } from "zod";
 import { StatusCodes } from "http-status-codes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { errorToast, successToast } from "@/utils/toast";
 import axiosInstance from "@/app/apiService/axios";
 import { useAppStore } from "@/app/store/app.store";
+import { LoginConstantMessage } from "@/utils/constant";
+import { TbMessageChatbot } from "react-icons/tb";
 
 type LoginFormData = z.TypeOf<typeof LoginFormSchema>;
 
@@ -25,7 +26,7 @@ export const LoginComponent = () => {
    } = useForm<LoginFormData>({
       resolver: zodResolver(LoginFormSchema)
    });
-   const {state: {isLoading}, dispatch} = useAppStore();
+   const { state: { isLoading }, dispatch } = useAppStore();
 
    const onSubmit: SubmitHandler<LoginFormData> = async (data: LoginFormData) => {
       if (isLoading) return;
@@ -40,31 +41,34 @@ export const LoginComponent = () => {
             setError("password", { message: "Sai mật khẩu hoặc email." });
             return;
          }
-         if (response.status === StatusCodes.CONFLICT) {
-            errorToast('Tạm thời bị khóa do đăng nhập sai nhiều lần.');
+
+         const result = response.data;
+         if (result.message === LoginConstantMessage.TEMPORARILY_BLOCKED) {
+            errorToast('Tài khoản tạm thời bị khóa do đăng nhập sai nhiều lần.');
+            return;
+         }
+         if (result.message === LoginConstantMessage.DISABLED_EMAIL) {
+            errorToast('Tài khoản bị vô hiệu. Vui lòng liên hệ quản trị viên.');
+            return;
+         }
+         if (result.message === LoginConstantMessage.NOT_VERIFIED_EMAIL) {
+            sessionStorage.setItem('verify-token', btoa(data.email));
+            const timestamp = new Date().getTime();
+            sessionStorage.setItem('verify-timestamp', timestamp.toString());
+            router.push(`/auth/confirm-email`);
             return;
          }
 
-         const result = response.data;
-
+         await fetch("/api/auth", {
+            method: "POST",
+            body: JSON.stringify({
+               accessToken: result.accessToken,
+               refreshToken: result.refreshToken,
+            }),
+         });
          successToast('Đăng nhập thành công');
+         router.push(searchParams.get('redirect') || '/chat');
 
-         if (result.user.isVerified) {
-            await fetch("/api/auth", {
-               method: "POST",
-               body: JSON.stringify({
-                  accessToken: result.accessToken,
-                  refreshToken: result.refreshToken,
-               }),
-            });
-            localStorage.setItem('user', JSON.stringify(result.user));
-            router.push(searchParams.get('redirect') || '/chat');
-         }
-         else {
-            const token = btoa(result.user.email);
-            sessionStorage.setItem('verify-token', token);
-            router.push(`/auth/confirm-email`);
-         }
       } catch (error) {
          errorToast('Có lỗi xảy ra.');
       } finally {
@@ -110,22 +114,18 @@ export const LoginComponent = () => {
                   <div className="my-3">
                      <button type="submit" className="w-80 h-12 transition-colors ease-out duration 200 text-md text-white bg-blue-500 rounded-md hover:bg-blue-600">Tiếp tục</button>
                   </div>
+                  <div className="relative w-80 mt-8 flex items-center justify-center">
+                     <div className="flex-grow border-t border-neutral-300"></div>
+                     <span className="mx-2 text-neutral-500">Hoặc</span>
+                     <div className="flex-grow border-t border-neutral-300"></div>
+                  </div>
+                  <div className="relative mt-4">
+                     <Link href="/chat" className="relative flex gap-5 items-center px-3 w-80 h-12 text-sm text-neutral-900 rounded-md border border-neutral-400 transition-colors duration-150 bg-white hover:bg-neutral-200">
+                        <TbMessageChatbot size={24} className="absolute left-4" />
+                        <span className="w-full text-center">Chuyển đến chatbot</span>
+                     </Link>
+                  </div>
                </form>
-               {/* <div className="text-[13px] text-center w-80 box-border text-neutral-800">
-                  Tạo chatbot cho tổ chức của mình?
-                  <Link href="/auth/register" className="text-blue-500 hover:text-blue-700"> Đăng ký</Link>
-               </div> */}
-               {/* <div className="relative w-80 mt-8 flex items-center justify-center">
-                  <div className="flex-grow border-t border-neutral-300"></div>
-                  <span className="mx-2 text-neutral-500">Hoặc</span>
-                  <div className="flex-grow border-t border-neutral-300"></div>
-               </div> */}
-               {/* <div className="relative mt-4">
-                  <button type="button" className="flex gap-5 items-center px-3 w-80 h-12 text-sm text-neutral-900 rounded-md border border-neutral-400 transition-colors duration-150 bg-white hover:bg-neutral-200">
-                     <GoogleIcon size={24} />
-                     <span >Tiếp tục với Google</span>
-                  </button>
-               </div> */}
             </div>
          </div>
       </>

@@ -1,10 +1,10 @@
 import { toast, Slide } from 'react-toastify';
 
-export const successToast = (message: string, id: string = '') => {
+export const successToast = (message: string, id: string = '1') => {
    toast.success(message, {
       toastId: id,
       position: "bottom-right",
-      autoClose: 2000,
+      autoClose: 1000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -14,7 +14,7 @@ export const successToast = (message: string, id: string = '') => {
       transition: Slide,
    });
 };
-export const errorToast = (message: string, id: string = '') => {
+export const errorToast = (message: string, id: string = '2') => {
    toast.error(message, {
       toastId: id,
       position: "bottom-right",
@@ -28,7 +28,7 @@ export const errorToast = (message: string, id: string = '') => {
       transition: Slide,
    });
 };
-export const errorToastLong = (message: string, id: string = '') => {
+export const errorToastLong = (message: string, id: string = '2') => {
    toast.error(message, {
       toastId: id,
       position: "top-center",
@@ -42,11 +42,11 @@ export const errorToastLong = (message: string, id: string = '') => {
       transition: Slide,
    });
 };
-export const basicToast = (message: string, id: string = '') => {
+export const basicToast = (message: string, id: string = '3') => {
    toast(message, {
       toastId: id,
       position: "bottom-right",
-      autoClose: 2000,
+      autoClose: 1500,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -56,7 +56,7 @@ export const basicToast = (message: string, id: string = '') => {
       transition: Slide,
    });
 };
-export const warnToast = (message: string, id: string = '') => {
+export const warnToast = (message: string, id: string = '4') => {
    toast.warn(message, {
       toastId: id,
       position: "top-center",

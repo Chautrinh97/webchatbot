@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { AppState, appInitState } from "../state/app.state";
-import { Department } from "@/types/chat";
 
 export type AppStore = {
    state: AppState;

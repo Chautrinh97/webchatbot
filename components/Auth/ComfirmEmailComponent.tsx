@@ -1,21 +1,48 @@
 'use client'
-import { errorToast } from "@/utils/toast";
+import { basicToast, errorToast } from "@/utils/toast";
 import { StatusCodes } from "http-status-codes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TbCheck } from "react-icons/tb";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import axiosInstance from "@/app/apiService/axios";
+import { AiOutlineLoading } from "react-icons/ai";
+import { useAppStore } from "@/app/store/app.store";
 
 export const ConfirmEmailComponent = () => {
+   const { state: { isLoading } } = useAppStore();
+   const router = useRouter();
    const [isResend, setIsResend] = useState<boolean>(false);
    const [isDisabled, setIsDisabled] = useState<boolean>(false);
-   const token = sessionStorage.getItem('verify-token');
-   const email = token ? atob(token) : null;
+   const [email, setEmail] = useState<string | null>(null);
+
+   useEffect(() => {
+      const token = sessionStorage.getItem('verify-token');
+      const timestamp = sessionStorage.getItem("verify-timestamp") as string;
+      const currentTime = new Date().getTime();
+      if (!token || !timestamp || isNaN(parseInt(timestamp))) {
+         basicToast('Đang tự động chuyển hướng đến chatbot...');
+         router.replace('/chat');
+         return;
+      }
+
+      const timeLimit = 5 * 1000;
+      if (currentTime - parseInt(timestamp) > timeLimit) {
+         sessionStorage.removeItem("verify-token");
+         sessionStorage.removeItem("verify-timestamp");
+         basicToast('Đang tự động chuyển hướng đến chatbot...');
+         router.replace("/chat");
+         return;
+      }
+
+      setEmail(token ? atob(token) : null);
+      
+   }, [router]);
 
    const handleResendEmail = async (e: any) => {
+      console.log(email);
       try {
          const response = await axiosInstance.post(
-            '/auth/resend-confirm',
+            '/auth/send-confirm-email',
             JSON.stringify({
                email: email,
             }),
@@ -40,6 +67,16 @@ export const ConfirmEmailComponent = () => {
          errorToast('Có lỗi xảy ra.');
       }
    }
+
+   if (isLoading) {
+      return (
+         <div className="flex flex-col items-center justify-center mt-24 gap-3">
+            <AiOutlineLoading className="animate-spin" />
+            <span>Đang tải dữ liệu...</span>
+         </div>
+      )
+   }
+
    return (
       <>
          <div className="flex flex-col items-center gap-3 transition-all ease-in duration-300">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+'use client'
 import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, successToast } from "@/utils/toast";
@@ -10,23 +10,29 @@ import {
    ModalBody,
    ModalFooter,
    useDisclosure,
+   Divider,
 } from "@nextui-org/react";
-import { TbTrash } from "react-icons/tb";
+import { useRouter } from "next/navigation";
+import { MdDelete } from "react-icons/md";
 
-export const DeletePositionModal = ({ positionId, refetchTrigger }: { positionId: string, refetchTrigger: () => void }) => {
+export const DeleteAuthorityGroupModal = ({ id, isDisabled }: { id: number | undefined, isDisabled: boolean}) => {
+   const router = useRouter();
    const { isOpen, onOpen, onClose } = useDisclosure();
+
    const handleDelete = async () => {
       try {
-         const response = await axiosInstance.delete(`/position/${positionId}`, {
+         const response = await axiosInstance.delete(`/permission/${id}`, {
             withCredentials: true,
          });
          if (response.status === StatusCodes.NOT_FOUND) {
-            console.log(response.data);
-            errorToast('Không tồn tại chức danh này.');
+            errorToast(`Nhóm quyền không tồn tại. Đang làm mới...`);
+            onClose();
+            router.refresh();
+            return;
          }
-         else successToast('Xóa thành công.');
+         successToast('Xóa thành công.');
          onClose();
-         refetchTrigger();
+         router.refresh();
          return;
       } catch {
          errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
@@ -36,11 +42,10 @@ export const DeletePositionModal = ({ positionId, refetchTrigger }: { positionId
    return (
       <>
          <button
-            type="button"
             onClick={onOpen}
-            title="Xóa"
-            className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-red-600 hover:text-red-800 disabled:opacity-50 disabled:pointer-events-none dark:text-red-500 dark:hover:text-red-400">
-            <TbTrash size={20} />
+            disabled={isDisabled}
+            className="flex items-center justify-center px-2 py-1 gap-1 bg-red-400 hover:bg-red-500 text-white rounded-sm shadow-sm">
+            <MdDelete size={20} /> Xóa
          </button>
          <Modal
             size="lg"
@@ -50,13 +55,17 @@ export const DeletePositionModal = ({ positionId, refetchTrigger }: { positionId
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
                   <>
-                     <ModalHeader className="flex flex-col gap-1 text-center text-red-500">Xóa chức danh</ModalHeader>
+                     <ModalHeader className="flex items-center gap-2 bg-red-600 text-white">
+                        <MdDelete size={24} /> Xóa nhóm quyền
+                     </ModalHeader>
+                     <Divider />
                      <ModalBody className="text-center">
-                        <p>Khi xóa chức danh, người dùng với chức danh này không bị xóa theo.</p>
+                        <p>Không thể hoàn tác nếu tiếp tục thực hiện.</p>
                         <p>Bạn có chắc chắn muốn xóa?</p>
                      </ModalBody>
+                     <Divider />
                      <ModalFooter>
-                        <Button color="danger" className="rounded-md text-red-500 font-bold" variant="light" onPress={handleDelete}>
+                        <Button color="danger" className="rounded-md text-white border border-red-600 bg-red-700 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800" onPress={handleDelete}>
                            Có
                         </Button>
                         <Button color="default" className="rounded-md" variant="light" onPress={onClose}>

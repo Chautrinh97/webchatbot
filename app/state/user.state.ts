@@ -1,7 +1,10 @@
 export type UserState = {
-   userId: string,
+   id: number,
    fullName: string,
    email: string,
    role: string,
-   isVerified: false | null,
+   isVerified: boolean | null,
+   isBlocked: boolean | null,
+   isDisabled: boolean | null,
+   permissions: string[],
 }

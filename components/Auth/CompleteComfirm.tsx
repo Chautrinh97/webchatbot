@@ -15,7 +15,7 @@ export function CompleteConfirmComponent() {
       const confirmEmail = async () => {
          try {
             const response = await axiosInstance.post(
-               '/auth/confirm',
+               '/auth/confirm-email',
                JSON.stringify({
                   token: verifyToken,
                }),
@@ -24,7 +24,7 @@ export function CompleteConfirmComponent() {
             if (response.status === StatusCodes.CONFLICT) {
                setMessage('Email đã được xác nhận trước đây.');
                basicToast('Trở về trang đăng nhập');
-               setTimeout(() => router.push('/auth/login'), 2000);
+               router.replace('/auth/login');
                return;
             } else if (response.status === StatusCodes.UNAUTHORIZED) {
                setMessage('Mã xác nhận có vấn đề.');

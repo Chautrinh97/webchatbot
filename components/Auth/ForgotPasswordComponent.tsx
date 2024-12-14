@@ -2,7 +2,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from 'react-hook-form'
 import Link from "next/link";
-import { TbAlertCircle } from "react-icons/tb";
+import { TbAlertCircle, TbMessageChatbot } from "react-icons/tb";
 import { z } from "zod";
 import { errorToast, promiseToast } from "@/utils/toast";
 import { StatusCodes } from "http-status-codes";
@@ -82,6 +82,17 @@ export const ForgotPasswordComponent = () => {
                   </div>
                   <div className="relative mt-2 text-[13px] text-center text-neutral-800">
                      <span>Quay lại <Link href='/auth/login' className="text-blue-500 hover:text-blue-700">đăng nhập</Link></span>
+                  </div>
+                  <div className="relative w-80 mt-8 flex items-center justify-center">
+                     <div className="flex-grow border-t border-neutral-300"></div>
+                     <span className="mx-2 text-neutral-500">Hoặc</span>
+                     <div className="flex-grow border-t border-neutral-300"></div>
+                  </div>
+                  <div className="relative mt-4">
+                     <Link href="/chat" className="relative flex gap-5 items-center px-3 w-80 h-12 text-sm text-neutral-900 rounded-md border border-neutral-400 transition-colors duration-150 bg-white hover:bg-neutral-200">
+                        <TbMessageChatbot size={24} className="absolute left-4" />
+                        <span className="w-full text-center">Chuyển đến chatbot</span>
+                     </Link>
                   </div>
                </form>
             </div>

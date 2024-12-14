@@ -1,7 +1,7 @@
-'use client'
+{/*'use client'
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from 'react-hook-form'
-import { SignupFormSchema } from "@/types/validation";
+import { AddUserFormSchema } from "@/types/validation";
 import Link from "next/link";
 import { TbAlertCircle } from "react-icons/tb";
 import { GoogleIcon } from "@/app/assets/google";
@@ -12,7 +12,7 @@ import { useRouter } from "next/navigation";
 import axiosInstance from "@/app/apiService/axios";
 import { useAppStore } from "@/app/store/app.store";
 
-type RegisterFormData = z.TypeOf<typeof SignupFormSchema>;
+type RegisterFormData = z.TypeOf<typeof AddUserFormSchema>;
 
 export const RegisterComponent = () => {
    const router = useRouter();
@@ -22,7 +22,7 @@ export const RegisterComponent = () => {
       formState: { errors },
       setError,
    } = useForm<RegisterFormData>({
-      resolver: zodResolver(SignupFormSchema)
+      resolver: zodResolver(AddUserFormSchema)
    });
    const {state: {isLoading}, dispatch} = useAppStore();
 
@@ -114,4 +114,4 @@ export const RegisterComponent = () => {
          </div>
       </>
    );
-};
+};*/}

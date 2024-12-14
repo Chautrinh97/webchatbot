@@ -3,19 +3,28 @@ import { UserState } from "../state/user.state";
 
 export type UserStore = {
    user: UserState;
+   isLoggedIn: boolean;
    setUser: (user: UserState) => void;
+   clearUser: () => void;
 }
 const getUserInit = (): UserState => {
    return {
-      userId: '',
+      id: 0,
       fullName: '',
       email: '',
       role: '',
       isVerified: null,
+      isBlocked: null,
+      isDisabled: null,
+      permissions: [],
    }
 }
 export const useUserStore = create<UserStore>((set) => ({
    user: getUserInit(),
-   setUser: (user) => set(() => ({ user })),
+   isLoggedIn: false,
+   setUser: (user) => set(() => ({ user: user, isLoggedIn: true })),
+   clearUser: () => {
+      set(() => ({ user: getUserInit(), isLoggedIn: false}));
+   }
 }));
 

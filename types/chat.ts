@@ -31,11 +31,10 @@ export const enum PermissionLevelEnum {
   Only = "Only department",
 }
 
-export type Position = {
-  id: string;
+export type DocumentProperty = {
+  id: number;
   name: string;
   description: string;
-  permissionLevel: string;
 }
 
 export const displayPermission = (permissionLevel: string) => {
