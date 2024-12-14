@@ -12,23 +12,26 @@ export default function UserProvider({ children }: { children: React.ReactNode }
 
    const mapUserResponseToState = (userData: any): UserState => {
       return {
-        id: userData.id,
-        fullName: userData.fullName,
-        email: userData.email,
-        role: userData.role,
-        isVerified: userData.isVerified ?? null,
-        isBlocked: userData.loginAttempts > 5 ? true : null, 
-        isDisabled: userData.isDisabled ?? null,
-        permissions: userData.authorityGroup?.permissions.map((permission: any) => permission.name) || [],
+         id: userData.id,
+         fullName: userData.fullName,
+         email: userData.email,
+         role: userData.role,
+         isVerified: userData.isVerified ?? null,
+         isBlocked: userData.loginAttempts > 5 ? true : null,
+         isDisabled: userData.isDisabled ?? null,
+         permissions: userData.authorityGroup?.permissions.map((permission: any) => permission.name) || [],
       };
-    };
+   };
 
    useEffect(() => {
       const fetchUser = async () => {
          try {
             const res = await axiosInstance.get('/user/me', { withCredentials: true });
+            // const res = await fetch('/api/user/me', { method: 'GET' });
             if (res.status === StatusCodes.OK) {
+               // const userResponse = await res.json();
                const userData = mapUserResponseToState(res.data.user);
+               // const userData = mapUserResponseToState(userResponse?.user);
                setUser(userData);
             } else if (res.status === StatusCodes.NOT_FOUND) {
                clearUser();

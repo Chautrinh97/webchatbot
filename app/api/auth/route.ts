@@ -14,9 +14,9 @@ export async function POST(request: Request) {
    const role = decodedAT.role;
 
    const headers = new Headers();
-   headers.append('Set-Cookie', `accessToken=${accessToken}; Path=/; HttpOnly; Max-Age=${accessTokenMaxAge}; SameSite=Strict; Secure`);
-   headers.append('Set-Cookie', `refreshToken=${refreshToken}; Path=/; HttpOnly; Max-Age=${refreshTokenMaxAge}; SameSite=Strict; Secure`);
-   headers.append('Set-Cookie', `role=${role}; Path=/; HttpOnly; Max-Age=${refreshTokenMaxAge}; SameSite=Strict; Secure`);
+   headers.append('Set-Cookie', `accessToken=${accessToken}; Path=/; HttpOnly; Max-Age=${accessTokenMaxAge}; SameSite=Lax;`);
+   headers.append('Set-Cookie', `refreshToken=${refreshToken}; Path=/; HttpOnly; Max-Age=${refreshTokenMaxAge}; SameSite=Lax;`);
+   headers.append('Set-Cookie', `role=${role}; Path=/; HttpOnly; Max-Age=${refreshTokenMaxAge}; SameSite=Lax;`);
 
    return Response.json(body, {
       status: 200,

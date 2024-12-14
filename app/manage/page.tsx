@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 
 const ManagePage = () => {
   const router = useRouter();
-  router.push('/manage/issuing-body');
+  router.push('/manage/document');
   return null; 
 };
 
