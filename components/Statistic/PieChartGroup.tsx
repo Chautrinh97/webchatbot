@@ -14,7 +14,7 @@ export const PieChartGroup = (
    const issuingBodyLabels = issuingBodies.map((item: any) => item.issuingBody);
    const issuingBodyData = issuingBodies.map((item: any) => item.count);
 
-   const { state: { isRegulatory, isPublic, validityStatus }, dispatch } = useStatisticStore();
+   const { state: { isRegulatory, validityStatus }, dispatch } = useStatisticStore();
 
    const handleChangeIsRegulatory = (e: ChangeEvent<HTMLSelectElement>) => {
       dispatch("regulatory", e.target.value);
@@ -44,13 +44,13 @@ export const PieChartGroup = (
             </div>
          </div> */}
          <div className="py-1 shadow-md border dark:border-0 rounded-lg bg-white dark:bg-sb-black hover:bg-neutral-100 dark:hover:bg-neutral-800">
-            <PieChart total={total} title={"Tỉ lệ tài liệu theo lĩnh vực"} labels={documentFieldLabels} data={documentFieldData} />
+            <PieChart total={total} title={"Tỉ lệ văn bản theo lĩnh vực"} labels={documentFieldLabels} data={documentFieldData} />
          </div>
          <div className="py-3 shadow-md border dark:border-0 rounded-lg bg-white dark:bg-sb-black hover:bg-neutral-100 dark:hover:bg-neutral-800">
-            <PieChart total={total} title={"Tỉ lệ tài liệu theo loại"} labels={documentTypeLabels} data={documentTypeData} />
+            <PieChart total={total} title={"Tỉ lệ văn bản theo loại"} labels={documentTypeLabels} data={documentTypeData} />
          </div>
          <div className="py-3 shadow-md border dark:border-0 rounded-lg bg-white dark:bg-sb-black hover:bg-neutral-100 dark:hover:bg-neutral-800">
-            <PieChart total={total} title={"Tỉ lệ tài liệu theo cơ quan ban hành"} labels={issuingBodyLabels} data={issuingBodyData} />
+            <PieChart total={total} title={"Tỉ lệ văn bản theo cơ quan ban hành"} labels={issuingBodyLabels} data={issuingBodyData} />
          </div>
       </div>
    );

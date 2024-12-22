@@ -3,10 +3,10 @@ import { basicToast, errorToast } from "@/utils/toast";
 import { StatusCodes } from "http-status-codes";
 import { useEffect, useState } from "react";
 import { TbCheck } from "react-icons/tb";
-import { useRouter, useSearchParams } from "next/navigation";
-import axiosInstance from "@/app/apiService/axios";
+import { useRouter } from "next/navigation";
 import { AiOutlineLoading } from "react-icons/ai";
 import { useAppStore } from "@/app/store/app.store";
+import {apiService} from "@/app/apiService/apiService";
 
 export const ConfirmEmailComponent = () => {
    const { state: { isLoading } } = useAppStore();
@@ -20,8 +20,8 @@ export const ConfirmEmailComponent = () => {
       const timestamp = sessionStorage.getItem("verify-timestamp") as string;
       const currentTime = new Date().getTime();
       if (!token || !timestamp || isNaN(parseInt(timestamp))) {
-         basicToast('Đang tự động chuyển hướng đến chatbot...');
-         router.replace('/chat');
+         basicToast('Đang tự động chuyển hướng đến trang đăng nhập');
+         router.replace('/auth/login');
          return;
       }
 
@@ -29,24 +29,21 @@ export const ConfirmEmailComponent = () => {
       if (currentTime - parseInt(timestamp) > timeLimit) {
          sessionStorage.removeItem("verify-token");
          sessionStorage.removeItem("verify-timestamp");
-         basicToast('Đang tự động chuyển hướng đến chatbot...');
-         router.replace("/chat");
+         basicToast('Đang tự động chuyển hướng đến trang đăng nhập');
+         router.replace("/auth/login");
          return;
       }
 
       setEmail(token ? atob(token) : null);
-      
+
    }, [router]);
 
    const handleResendEmail = async (e: any) => {
-      console.log(email);
       try {
-         const response = await axiosInstance.post(
-            '/auth/send-confirm-email',
-            JSON.stringify({
-               email: email,
-            }),
-         );
+         const response = await apiService.post(
+            '/auth/send-confirm-email', {
+            email: email,
+         });
 
          if (response.status === StatusCodes.NOT_FOUND) {
             errorToast('Email không tồn tại.');

@@ -1,4 +1,5 @@
-import axiosInstance from "@/app/apiService/axios";
+import {apiService} from "@/app/apiService/apiService";
+import { getAccessToken } from "@/app/apiService/cookies";
 import { AddDocumentPropertiesModal } from "@/components/Manage/DocumentProperties/AddDocumentPropertiesModal";
 import { DocumentPropertiesComponent } from "@/components/Manage/DocumentProperties/DocumentPropertiesComponent";
 import { PageLimitComponent } from "@/components/Manage/PageLimitComponent";
@@ -10,49 +11,41 @@ import { UserPermissionConstant } from "@/utils/constant";
 import { validateSearchParams } from "@/utils/string";
 import { StatusCodes } from "http-status-codes";
 import { Metadata } from "next";
-import { cookies } from "next/headers";
-import queryString from "query-string";
 import { Suspense } from "react";
 
 export const metadata: Metadata = {
-   title: 'Loại tài liệu',
+   title: 'Loại văn bản',
 }
 
-const fetchData = async (searchKey: string, pageLimit: number, pageNumber: number) => {
-   const cookieStore = cookies();
-   const accessToken = cookieStore.get("accessToken")?.value;
-   const params = queryString.stringify({ searchKey, pageNumber, pageLimit });
-   const response = await axiosInstance.get(`/document-type?${params}`,
-      {
-         headers: {
-            Authorization: `Bearer ${accessToken}`,
-         },
-         withCredentials: true
-      }
-   );
-   return response;
-}
-
-export default async function DocumentTypePage({ searchParams }: { searchParams: any }) {
+export default async function DocumentTypePage(props: { searchParams: Promise<any> }) {
+   const searchParams = await props.searchParams;
    const { searchKey = '' } = searchParams;
    const { pageNumber, pageLimit } = validateSearchParams(searchParams);
 
    try {
-      const response = await fetchData(searchKey, pageLimit, pageNumber);
+      const token = await getAccessToken();
+      const response = await apiService.get('/document-type', {
+         searchKey, pageLimit, pageNumber,
+      }, {
+         Authorization: `Bearer ${token}`
+      });
 
       if (response.status !== StatusCodes.OK) {
          return (
             <div className="flex flex-col items-center justify-center mt-24 gap-3">
-               <span>Có lỗi phía server. Vui lòng thử lại sau.</span>
+               <span>Có lỗi phía server. Vui lòng thử lại sau</span>
             </div>
          )
       }
-      const properties: DocumentProperty[] = response.data.data.map((property: any) => ({
+
+      const propertiesData = await response.json();
+      const properties: DocumentProperty[] = propertiesData.data.map((property: any) => ({
          id: property.id,
          name: property.name,
          description: property.description,
       }));
-      const total = response.data.total;
+      const total = propertiesData.total;
+      
       return (
          <Suspense fallback={<Loading />}>
             <div className="w-full h-full">
@@ -63,14 +56,14 @@ export default async function DocumentTypePage({ searchParams }: { searchParams:
                   </div>
                   <AddDocumentPropertiesModal
                      propertyApiURI="/document-type"
-                     propertyText="loại tài liệu"
+                     propertyText="loại văn bản"
                      propertyPermission={UserPermissionConstant.MANAGE_DOCUMENT_TYPES} />
                </div>
                <div className="mt-3 flex flex-col relative px-6">
                   <DocumentPropertiesComponent
                      properties={properties}
                      propertyAPIURI="/document-type"
-                     propertyText="loại tài liệu"
+                     propertyText="loại văn bản"
                      propertyPermission={UserPermissionConstant.MANAGE_DOCUMENT_TYPES}
                      pageNumber={pageNumber}
                      pageLimit={pageLimit} />
@@ -86,7 +79,7 @@ export default async function DocumentTypePage({ searchParams }: { searchParams:
    } catch {
       return (
          <div className="flex flex-col items-center justify-center mt-24 gap-3">
-            <span>Có lỗi phía server. Vui lòng thử lại sau.</span>
+            <span>Có lỗi phía server. Vui lòng thử lại sau</span>
          </div>
       )
    }

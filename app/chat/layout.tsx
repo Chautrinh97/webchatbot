@@ -2,23 +2,55 @@ import { SideBar } from "@/components/Chat/SideBar";
 import { ThemeToggle } from "@/components/Others/ThemeToggle";
 import type { Metadata } from 'next'
 import UserProvider from "../providers/UserProvider";
+import { StatusCodes } from "http-status-codes";
+import { getAccessToken } from "../apiService/cookies";
+import { apiService } from "../apiService/apiService";
+import { TokenProvider } from "../providers/TokenProvider";
 
 export const metadata: Metadata = {
-   title: 'Chatbot',
+   title: 'Trang chatbot',
 }
-const ChatLayout = ({ children }: { children: React.ReactNode }) => {
+
+const mapUserResponse = (userData: any) => {
+   return {
+      fullName: userData.fullName,
+      email: userData.email,
+      role: userData.role,
+      permissions: userData.permissions || [],
+   };
+};
+const ChatLayout = async ({ children }: { children: React.ReactNode }) => {
+   let user;
+   try {
+      const token = await getAccessToken();
+      const response = await apiService.get('/user/me', {}, {
+         Authorization: `Bearer ${token}`,
+      });
+      const data = await response.json();
+      if (response.status === StatusCodes.OK) {
+         user = mapUserResponse(data.user);
+      }
+   } catch {
+      return (
+         <div className="flex flex-col items-center justify-center mt-24 gap-3">
+            <span>Có lỗi phía server. Vui lòng thử lại sau</span>
+         </div>
+      );
+   }
    return (
       <div className="flex h-screen w-screen flex-col text-sm text-black dark:text-white">
          <div className="relative flex h-full w-full sm:pt-0">
-            <UserProvider>
-               <SideBar />
-            </UserProvider>
-            <div className="flex flex-1">
-               {children}
-            </div>
-            <div className="absolute top-2 right-2">
-               <ThemeToggle />
-            </div>
+            <TokenProvider>
+               <UserProvider user={user}>
+                  <SideBar user={user} />
+                  <div className="flex flex-1">
+                     {children}
+                  </div>
+                  <div className="absolute top-2 right-4">
+                     <ThemeToggle />
+                  </div>
+               </UserProvider>
+            </TokenProvider>
          </div>
       </div>
    );

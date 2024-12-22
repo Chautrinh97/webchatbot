@@ -10,14 +10,14 @@ import { useUserStore } from "@/app/store/user.store";
 import { UserPermissionConstant, UserRoleConstant } from "@/utils/constant";
 import { usePathname } from "next/navigation";
 
-export const ManageSidebar = () => {
+export const ManageSidebar = ({ user }: { user: any }) => {
    const { state: { isSidebarOpen }, dispatch } = useAppStore();
    const handleToggleSidebar = () => {
       dispatch("isSidebarOpen", !isSidebarOpen);
    }
-   const { user } = useUserStore();
+   // const { user } = useUserStore();
    const hasPermission = (permissionTag: string) => {
-      return user.permissions.some((permission) => permission === permissionTag);
+      return user.permissions.some((permission: any) => permission === permissionTag);
    }
 
    const pathname = usePathname();
@@ -25,16 +25,16 @@ export const ManageSidebar = () => {
 
    return (
       <>
-         <aside className={`fixed top-0 left-0 h-full pt-20 transition-all ease-in-out duration-200 bg-sb-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-600 sm:relative sm:top-0
+         <aside className={`fixed top-0 left-0 h-full pt-[3.75rem] transition-all ease-in-out duration-200 bg-sb-white dark:bg-neutral-800 border-gray-200 dark:border-neutral-600 sm:relative sm:top-0
       ${isSidebarOpen ? 'w-60 z-20 border-r' : 'w-0 z-10'}`} aria-label="Sidebar">
-            <div className={`${!isSidebarOpen && 'hidden'} h-full px-3 pb-4 overflow-x-hidden`}>
+            <div className={`${!isSidebarOpen && 'hidden'} h-full pb-4 overflow-x-hidden`}>
                <ul className="space-y-2 font-medium">
                   <li>
-                     <div className="mb-2 uppercase">Quản lý tài liệu</div>
+                     <div className="mt-1 mb-2 py-2 ps-4 uppercase shadow-md bg-blue-600 text-white">Quản lý văn bản</div>
                      <ul className="space-y-2">
                         <li>
                            <Link href="/manage/issuing-body"
-                              className={`flex items-center p-2 rounded-lg group
+                              className={`flex items-center px-3 py-2  group
                         ${isActive("/manage/issuing-body") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
                               <FaLandmark size={24} />
                               <span className="ms-3">Cơ quan ban hành</span>
@@ -42,71 +42,65 @@ export const ManageSidebar = () => {
                         </li>
                         <li>
                            <Link href="/manage/document-field"
-                              className={`flex items-center p-2 rounded-lg group 
+                              className={`flex items-center px-3 py-2  group 
                         ${isActive("/manage/document-field") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
                               <FaBriefcase size={24} />
-                              <span className="ms-3">Lĩnh vực tài liệu</span>
+                              <span className="ms-3">Lĩnh vực văn bản</span>
                            </Link>
                         </li>
                         <li>
                            <Link href="/manage/document-type"
-                              className={`flex items-center p-2 rounded-lg group 
+                              className={`flex items-center px-3 py-2  group 
                         ${isActive("/manage/document-type") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
                               <FaClipboard size={24} />
-                              <span className="ms-3">Loại tài liệu</span>
+                              <span className="ms-3">Loại văn bản</span>
                            </Link>
                         </li>
                         <li>
                            <Link href="/manage/document"
-                              className={`flex items-center p-2 rounded-lg group 
+                              className={`flex items-center px-3 py-2  group 
                         ${isActive("/manage/document") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
                               <HiOutlineDocumentDuplicate size={24} />
-                              <span className="ms-3">Tài liệu</span>
+                              <span className="ms-3">Văn bản</span>
                            </Link>
                         </li>
-                        { }
-                        {(user.role === UserRoleConstant.SUPERADMIN || hasPermission(UserPermissionConstant.VIEW_DOCUMENT_STATISTIC)) &&
-                           <li>
-                              <Link href="/manage/document-statistic" className={`flex items-center p-2 rounded-lg group 
+                        <li>
+                           <Link href="/manage/document-statistic" className={`flex items-center px-3 py-2  group 
                         ${isActive("/manage/document-statistic") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
-                                 <IoIosStats size={24} />
-                                 <span className="ms-3">Thống kê tài liệu</span>
-                              </Link>
-                           </li>
-                        }
+                              <IoIosStats size={24} />
+                              <span className="ms-3">Thống kê văn bản</span>
+                           </Link>
+                        </li>
                      </ul>
                   </li>
-                  {(user.role === UserRoleConstant.SUPERADMIN || hasPermission(UserPermissionConstant.VIEW_CHATBOT_STATISTIC)) &&
+                  {(hasPermission(UserPermissionConstant.VIEW_STATISTIC_CHATBOT || hasPermission(UserPermissionConstant.MANAGE_USERS))) &&
                      <li>
-                        <div className="mb-2 uppercase">Hệ thống</div>
+                        <div className="mb-2 mt-2 py-2 ps-4 uppercase shadow-md bg-blue-600 text-white">Hệ thống</div>
                         <ul className="space-y-2">
-                           {user.role === UserRoleConstant.SUPERADMIN &&
-                              <>
-                                 < li >
-                                    <Link href="/manage/user"
-                                       className={`flex items-center p-2 rounded-lg group 
+                           < li >
+                              <Link href="/manage/user"
+                                 className={`flex items-center px-3 py-2  group 
                                        ${isActive("/manage/user") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
-                                       <FaUsers size={24} />
-                                       <span className="ms-3">Người dùng</span>
-                                    </Link>
-                                 </li>
-                                 <li>
-                                    <Link href="/manage/authority-group"
-                                       className={`flex items-center p-2 rounded-lg group 
-                                       ${isActive("/manage/authority-group") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
-                                       <FaUsersCog size={24} />
-                                       <span className="ms-3">Nhóm quyền người dùng</span>
-                                    </Link>
-                                 </li>
-                              </>
-                           }
-                           {(user.role === UserRoleConstant.SUPERADMIN || hasPermission(UserPermissionConstant.VIEW_CHATBOT_STATISTIC)) &&
+                                 <FaUsers size={24} />
+                                 <span className="ms-3">Người dùng</span>
+                              </Link>
+                           </li>
+                           {user.role === UserRoleConstant.SUPERADMIN &&
                               <li>
-                                 <Link href="#" className="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700 group">
-                                    <FaRobot size={24} />
-                                    <span className="ms-3">Thống kê truy vấn</span>
+                                 <Link href="/manage/authority-group"
+                                    className={`flex items-center px-3 py-2  group 
+                                       ${isActive("/manage/authority-group") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
+                                    <FaUsersCog size={24} />
+                                    <span className="ms-3">Nhóm quyền người dùng</span>
                                  </Link>
-                              </li>}
+                              </li>
+                           }
+                           <li>
+                              <Link href="#" className="flex items-center px-3 py-2 text-gray-900  dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700 group">
+                                 <FaRobot size={24} />
+                                 <span className="ms-3">Thống kê truy vấn</span>
+                              </Link>
+                           </li>
                         </ul>
                      </li>
                   }

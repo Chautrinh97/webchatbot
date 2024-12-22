@@ -9,7 +9,6 @@ export type UserStore = {
 }
 const getUserInit = (): UserState => {
    return {
-      id: 0,
       fullName: '',
       email: '',
       role: '',

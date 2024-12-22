@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import icon from '../icon_75.jpg'
 
 const AuthLayout = ({ children }: { children: React.ReactNode }) => {
    return (
@@ -7,11 +8,12 @@ const AuthLayout = ({ children }: { children: React.ReactNode }) => {
             <div className="w-full flex justify-center items-center">
                <div className="mx-auto mt-10 sm:mt-4 lg:mt-10 animate-fadeinbouncedown">
                   <Image
-                     src="/icon.jpg"
+                     src={icon}
                      alt="Logo Chatbot"
                      priority={true}
-                     width={100}
-                     height={100}
+                     width={80}
+                     height={80}
+                     className="hover:animate-bounceupdown"
                      style={{
                         borderRadius: '9999px'
                      }}

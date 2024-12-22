@@ -1,5 +1,4 @@
 "use client"
-import axiosInstance from "@/app/apiService/axios";
 import { useUserStore } from "@/app/store/user.store";
 import { errorToast, successToast } from "@/utils/toast";
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, useDisclosure, ModalContent, Modal, ModalBody, ModalHeader, Divider, Button, ModalFooter } from "@nextui-org/react";
@@ -10,6 +9,7 @@ import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
 import { TbUserEdit, TbUserCircle, TbChevronUp, TbLogin } from "react-icons/tb"
 import { ManageAccountModal } from "../Auth/ManageAccountModal";
 import { StatusCodes } from "http-status-codes";
+import {apiService} from "@/app/apiService/apiService";
 
 export const SidebarOptionButton: React.FC = () => {
    const router = useRouter();
@@ -19,19 +19,12 @@ export const SidebarOptionButton: React.FC = () => {
 
    const handleLogout = async () => {
       try {
-         await axiosInstance.post(
-            '/auth/logout', null,
-            {
-               withCredentials: true,
-            }
-         );
-      } catch (error) {
-         errorToast('Có lỗi xảy ra trong quá trình đăng xuất.');
-         return;
+         await fetch('/api/auth/logout', {
+            method: "POST",
+         });
+      } catch {
+         errorToast('Có lỗi trong quá trình đăng xuất. Vui lòng thử lại sau');
       }
-      await fetch('/api/auth/logout', {
-         method: "POST",
-      });
       successToast('Đăng xuất thành công.');
       router.push('/');
       return;
@@ -39,7 +32,7 @@ export const SidebarOptionButton: React.FC = () => {
 
    const fetchUser = async () => {
       try {
-         const response = await axiosInstance.get('/user/me', { withCredentials: true });
+         const response = await apiService.get('/user/me');
          if (response.status === StatusCodes.NOT_FOUND) {
             errorToast(`Không tồn tại người dùng này. Đang đăng xuất...`);
             await fetch('/api/auth/logout', {
@@ -48,12 +41,13 @@ export const SidebarOptionButton: React.FC = () => {
             router.push('/');
             return;
          } else if (response.status !== StatusCodes.OK) {
-            errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+            errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
             return;
          }
-         setUser(response.data.user);
+         const result = await response.json();
+         setUser(result.user);
       } catch (error) {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.')
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau')
          return;
       }
    }
@@ -63,7 +57,7 @@ export const SidebarOptionButton: React.FC = () => {
          fetchUser();
          accountModal.onOpen();
       } catch {
-         errorToast('Có lỗi khi tải dữ liệu. Vui lòng thử lại sau.');
+         errorToast('Có lỗi khi tải dữ liệu. Vui lòng thử lại sau');
          return;
       }
    }
@@ -96,9 +90,9 @@ export const SidebarOptionButton: React.FC = () => {
                            {user.fullName}
                         </DropdownItem>
                         <DropdownItem key="document_manage" href='/manage/document' startContent={<HiOutlineBuildingOffice2 size={20} />}>
-                           Trang quản lý tài liệu
+                           Trang quản lý văn bản
                         </DropdownItem>
-                        <DropdownItem key="account_manage" startContent={<TbUserEdit size={20}/>} onPress={handleOpenModal}>
+                        <DropdownItem key="account_manage" startContent={<TbUserEdit size={20} />} onPress={handleOpenModal}>
                            Quản lý tài khoản
                         </DropdownItem>
                         <DropdownItem key="log_out" startContent={<FaSignOutAlt size={20} />} onPress={handleLogout}>
@@ -108,7 +102,7 @@ export const SidebarOptionButton: React.FC = () => {
                   </> : (
                      <DropdownMenu aria-label="Static Actions">
                         <DropdownItem key="document_manage" href='/manage/' startContent={<HiOutlineBuildingOffice2 size={20} />}>
-                           Trang quản lý tài liệu
+                           Trang quản lý văn bản
                         </DropdownItem>
                         <DropdownItem key="log_in" href='/auth/login/' startContent={<TbLogin size={20} />}>
                            Đăng nhập
@@ -116,7 +110,7 @@ export const SidebarOptionButton: React.FC = () => {
                      </DropdownMenu>
                   )}
             </Dropdown>
-            <ManageAccountModal disClosure={accountModal} user={user}/>
+            <ManageAccountModal disClosure={accountModal} user={user} />
          </div>
       </>
    )

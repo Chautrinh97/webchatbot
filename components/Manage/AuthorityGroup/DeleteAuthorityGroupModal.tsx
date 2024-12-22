@@ -1,5 +1,4 @@
 'use client'
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, successToast } from "@/utils/toast";
 import {
@@ -14,6 +13,7 @@ import {
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { MdDelete } from "react-icons/md";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
 
 export const DeleteAuthorityGroupModal = ({ id, isDisabled }: { id: number | undefined, isDisabled: boolean}) => {
    const router = useRouter();
@@ -21,9 +21,7 @@ export const DeleteAuthorityGroupModal = ({ id, isDisabled }: { id: number | und
 
    const handleDelete = async () => {
       try {
-         const response = await axiosInstance.delete(`/permission/${id}`, {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.delete(`/permission/${id}`);
          if (response.status === StatusCodes.NOT_FOUND) {
             errorToast(`Nhóm quyền không tồn tại. Đang làm mới...`);
             onClose();
@@ -35,7 +33,7 @@ export const DeleteAuthorityGroupModal = ({ id, isDisabled }: { id: number | und
          router.refresh();
          return;
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          return;
       }
    }
@@ -48,9 +46,11 @@ export const DeleteAuthorityGroupModal = ({ id, isDisabled }: { id: number | und
             <MdDelete size={20} /> Xóa
          </button>
          <Modal
+            backdrop="blur"
             size="lg"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (

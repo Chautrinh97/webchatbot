@@ -1,10 +1,9 @@
 'use client'
 import { SubmitHandler, useForm } from "react-hook-form";
-import { TbAlertCircle, TbUserEdit } from "react-icons/tb";
+import { TbAlertCircle } from "react-icons/tb";
 import { ChangePasswordSchemas } from "@/types/validation";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, successToast } from "@/utils/toast";
 import { FaInfoCircle } from "react-icons/fa";
@@ -21,6 +20,7 @@ import {
 import { UseDisclosureReturn } from "@nextui-org/use-disclosure";
 import { useRouter } from "next/navigation";
 import { MdOutlinePassword } from "react-icons/md";
+import { apiService } from "@/app/apiService/apiService";
 
 type ChangePasswordForm = z.TypeOf<typeof ChangePasswordSchemas>;
 export const ManageAccountModal = ({ disClosure, user }: { disClosure: UseDisclosureReturn, user: any }) => {
@@ -39,9 +39,7 @@ export const ManageAccountModal = ({ disClosure, user }: { disClosure: UseDisclo
    const onSubmit: SubmitHandler<ChangePasswordForm> = async (data) => {
       const { confirmPassword, ...formData } = data;
       try {
-         const response = await axiosInstance.put(`/user/me`, JSON.stringify(formData), {
-            withCredentials: true,
-         });
+         const response = await apiService.put(`/user/me`, formData);
          if (response.status === StatusCodes.CONFLICT) {
             setError("oldPassword", { message: "Mật khẩu cũ không chính xác." });
             return;
@@ -58,7 +56,7 @@ export const ManageAccountModal = ({ disClosure, user }: { disClosure: UseDisclo
          router.refresh();
          return;
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          return;
       }
    }
@@ -66,9 +64,11 @@ export const ManageAccountModal = ({ disClosure, user }: { disClosure: UseDisclo
    return (
       <>
          <Modal
+            backdrop="blur"
             size="lg"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (

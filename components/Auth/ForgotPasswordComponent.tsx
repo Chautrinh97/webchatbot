@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from 'react-hook-form'
 import Link from "next/link";
@@ -8,13 +8,10 @@ import { errorToast, promiseToast } from "@/utils/toast";
 import { StatusCodes } from "http-status-codes";
 import { useRef, useState } from "react";
 import { EmailIcon } from "@/app/assets/email";
-import axiosInstance from "@/app/apiService/axios";
+import { ForgotPasswordSchema } from "@/types/validation";
+import {apiService} from "@/app/apiService/apiService";
 
-const Schema = z.object({
-   email: z.string().email({ message: 'Nhập email hợp lệ (user@domain.com).' }).trim(),
-});
-type Form = z.TypeOf<typeof Schema>;
-
+type ForgotPasswordForm = z.TypeOf<typeof ForgotPasswordSchema>;
 export const ForgotPasswordComponent = () => {
    const [sendMailStatus, setSendMailStatus] = useState<boolean>(false);
    const formRef = useRef<HTMLFormElement>(null);
@@ -24,13 +21,13 @@ export const ForgotPasswordComponent = () => {
       formState: { errors },
       setError,
       getValues,
-   } = useForm<Form>({
-      resolver: zodResolver(Schema)
+   } = useForm<ForgotPasswordForm>({
+      resolver: zodResolver(ForgotPasswordSchema)
    });
 
-   const onSubmit: SubmitHandler<Form> = async (data: Form) => {
+   const onSubmit: SubmitHandler<ForgotPasswordForm> = async (data: ForgotPasswordForm) => {
       try {
-         const response = await promiseToast(axiosInstance.post('/auth/forgot-password', JSON.stringify(data)), 'Đang xử lý...');
+         const response = await promiseToast(apiService.post('/auth/forgot-password', data), 'Đang xử lý...');
 
          if (response.status === StatusCodes.NOT_FOUND) {
             setError('email', { message: 'Email không tồn tại.' });

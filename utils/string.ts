@@ -1,4 +1,4 @@
-import { UserRoleConstant } from "./constant";
+import { SyncStatus, UserRoleConstant } from "./constant";
 
 export const generateRandomString = (length: number): string => {
    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -23,3 +23,13 @@ export const validateSearchParams = (params: any) => {
       pageLimit: isNumberOrNull(pageLimit) ? parseInt(pageLimit) : 10,
    };
 };
+
+export const getSyncStatus = (syncStatus: string) => {
+   if (syncStatus === SyncStatus.NOT_SYNC) 
+      return "Chưa đồng bộ"
+   else if (syncStatus === SyncStatus.PENDING_SYNC)
+      return "Đang chờ đồng bộ"
+   else if (syncStatus === SyncStatus.SYNC)
+      return "Đã đồng bộ"
+   else return "Đồng bộ thất bại";
+}

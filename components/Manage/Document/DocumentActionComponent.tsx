@@ -6,8 +6,10 @@ import { UserPermissionConstant, UserRoleConstant } from "@/utils/constant";
 
 export const DocumentActionComponent = ({ id }: { id: number }) => {
    const { user } = useUserStore();
-   const hasPermission = user.permissions?.some((permission) => permission === UserPermissionConstant.MANAGE_DOCUMENTS)
-   if (user.role === UserRoleConstant.SUPERADMIN || hasPermission)
+   const hasPermission = user.permissions?.some((permission) =>
+      permission === UserPermissionConstant.MANAGE_DOCUMENTS ||
+      permission === UserPermissionConstant.MANAGE_DOCUMENTS_PROPERTIES);
+   if (hasPermission)
       return (
          <>
             <EditDocumentModal id={id} />

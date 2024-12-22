@@ -41,7 +41,7 @@ export const RegisterComponent = () => {
          sessionStorage.setItem('verify-token', token);
          router.push(`/auth/confirm-email`);
       } catch (error) {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
       } finally {
          dispatch("isLoading", false);
       }

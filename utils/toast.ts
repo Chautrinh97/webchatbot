@@ -14,10 +14,38 @@ export const successToast = (message: string, id: string = '1') => {
       transition: Slide,
    });
 };
+export const errorToastShort = (message: string, id: string = '2') => {
+   toast.error(message, {
+      toastId: id,
+      position: "bottom-right",
+      autoClose: 1500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      transition: Slide,
+   });
+};
 export const errorToast = (message: string, id: string = '2') => {
    toast.error(message, {
       toastId: id,
       position: "bottom-right",
+      autoClose: 3500,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "light",
+      transition: Slide,
+   });
+};
+export const errorToastUp = (message: string, id: string = '2') => {
+   toast.error(message, {
+      toastId: id,
+      position: "top-center",
       autoClose: 3500,
       hideProgressBar: false,
       closeOnClick: true,

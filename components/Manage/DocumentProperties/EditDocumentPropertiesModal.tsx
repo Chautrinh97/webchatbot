@@ -5,7 +5,6 @@ import { DocumentPropertiesSchema } from "@/types/validation";
 import { MdOutlineEdit } from "react-icons/md";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, successToast } from "@/utils/toast";
 import {
@@ -17,8 +16,10 @@ import {
    ModalFooter,
    useDisclosure,
    Divider,
+   Tooltip,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
 
 type EditDocumentPropertiesForm = z.TypeOf<typeof DocumentPropertiesSchema>;
 export const EditDocumentPropertiesModal = (
@@ -39,11 +40,7 @@ export const EditDocumentPropertiesModal = (
 
    const onSubmit: SubmitHandler<EditDocumentPropertiesForm> = async (data) => {
       try {
-         const response = await axiosInstance.put(`${propertyAPIURI}/${id}`,
-            JSON.stringify(data),
-            {
-               withCredentials: true,
-            });
+         const response = await apiServiceClient.put(`${propertyAPIURI}/${id}`, data);
          if (response.status === StatusCodes.CONFLICT) {
             setError('name', { message: `Tên ${propertyText} đã tồn tại, hãy dùng tên khác.` });
             return;
@@ -52,41 +49,44 @@ export const EditDocumentPropertiesModal = (
          onClose();
          router.refresh();
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
       }
    }
    const fetchProperty = async () => {
       try {
-         const response = await axiosInstance.get(`${propertyAPIURI}/${id}`, {
-            withCredentials: true,
-         });
-
+         const response = await apiServiceClient.get(`${propertyAPIURI}/${id}`);
          if (response.status === StatusCodes.NOT_FOUND) {
             errorToast(`Không tồn tại ${propertyText} này.`);
             router.refresh();
             return;
          }
-         setValue('name', response.data.name);
-         setValue('description', response.data.description);
+         const result = await response.json();
+         setValue('name', result.name);
+         setValue('description', result.description);
          onOpen();
       } catch {
-         errorToast('Có lỗi khi tải dữ liệu. Vui lòng thử lại sau.');
+         errorToast('Có lỗi khi tải dữ liệu. Vui lòng thử lại sau');
          return;
       }
    }
 
    return (
       <>
-         <button
-            onClick={fetchProperty}
-            title="Cập nhật"
-            className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400">
-            <TbEdit size={20} />
-         </button>
+         <Tooltip content="Cập nhật" placement={'left'}>
+            <button
+               onClick={fetchProperty}
+               className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent 
+            text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none 
+            dark:text-blue-500 dark:hover:text-blue-400 hover:animate-bounceupdown">
+               <TbEdit size={20} />
+            </button>
+         </Tooltip>
          <Modal
+            backdrop="blur"
             size="xl"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (

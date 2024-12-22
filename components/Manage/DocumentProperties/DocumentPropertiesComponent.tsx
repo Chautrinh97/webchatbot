@@ -36,11 +36,11 @@ export const DocumentPropertiesComponent = (
                         <th scope="col" className="px-6 py-3 text-start font-medium uppercase w-20">Tác vụ</th>
                      </tr>
                   </thead>
-                  <tbody className="min-w-full divide-y divide-gray-200 dark:divide-neutral-500">
+                  <tbody className="min-w-full divide-y divide-gray-200 dark:divide-neutral-600">
                      {properties?.length ? (
                         <>
                            {properties.map((property, index) => (
-                              <tr className="hover:bg-gray-100 dark:hover:bg-neutral-700/50 divide-x dark:divide-neutral-500" key={property.id}>
+                              <tr className="hover:bg-gray-100 dark:hover:bg-neutral-700/50 divide-x dark:divide-neutral-600" key={property.id}>
                                  <td className="px-12 py-4 whitespace-normal text-sm font-semibold text-gray-800 dark:text-neutral-200">{pageLimit * (pageNumber - 1) + index + 1}</td>
                                  <td className="px-6 py-4 whitespace-normal text-sm font-medium text-gray-800 dark:text-neutral-200">{property.name}</td>
                                  <td className="px-6 py-4 whitespace-normal text-sm text-gray-800 dark:text-neutral-200">{property.description}</td>

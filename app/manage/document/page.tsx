@@ -1,4 +1,5 @@
-import axiosInstance from "@/app/apiService/axios";
+import {apiService} from "@/app/apiService/apiService";
+import { getAccessToken } from "@/app/apiService/cookies";
 import { AddDocumentModal } from "@/components/Manage/Document/AddDocumentModal";
 import { DocumentTable } from "@/components/Manage/Document/DocumentTable";
 import { FilterDocumentComponent } from "@/components/Manage/Document/FilterDocumentComponent";
@@ -8,12 +9,10 @@ import { DocumentProperty } from "@/types/chat";
 import { DocumentItem } from "@/types/manage";
 import { StatusCodes } from "http-status-codes";
 import { Metadata } from "next";
-import { cookies } from "next/headers";
-import queryString from "query-string";
 import { Suspense } from 'react'
 
 export const metadata: Metadata = {
-   title: 'Tài liệu',
+   title: 'Văn bản',
 }
 
 const fetchData = async (
@@ -24,72 +23,50 @@ const fetchData = async (
    documentType: number | null,
    issuingBody: number | null,
    isRegulatory: string | null,
+   isValid: string | null,
+   isSync: string | null,
+   token: any,
 ) => {
-   const cookieStore = cookies();
-   const accessToken = cookieStore.get("accessToken")?.value;
-   const params = queryString.stringify({ searchKey, pageNumber, pageLimit, documentField, documentType, issuingBody, isRegulatory });
-   const response = await axiosInstance.get(`/document?${params}`,
-      {
-         headers: {
-            Authorization: `Bearer ${accessToken}`,
-         },
-         withCredentials: true
-      }
-   );
+   const response = await apiService.get(`/document`, {
+      searchKey,
+      pageLimit,
+      pageNumber,
+      documentField,
+      documentType,
+      issuingBody,
+      isRegulatory,
+      isValid,
+      isSync,
+   },{
+      Authorization: `Bearer ${token}`,
+   });
    return response;
 }
 
-const fetchIssuingBodies = async () => {
-   const cookieStore = cookies();
-   const accessToken = cookieStore.get("accessToken")?.value;
-
-   const response = await axiosInstance.get(`/issuing-body`,
-      {
-         params: {
-            isExport: true,
-         },
-         headers: {
-            Authorization: `Bearer ${accessToken}`,
-         },
-         withCredentials: true
-      }
-   );
+const fetchIssuingBodies = async (token: any) => {
+   const response = await apiService.get(`/issuing-body`, {
+      isExport: true,
+   }, {
+      Authorization: `Bearer ${token}`,
+   });
    return response;
 }
 
-const fetchDocumentFields = async () => {
-   const cookieStore = cookies();
-   const accessToken = cookieStore.get("accessToken")?.value;
-
-   const response = await axiosInstance.get(`/document-field`,
-      {
-         params: {
-            isExport: true,
-         },
-         headers: {
-            Authorization: `Bearer ${accessToken}`,
-         },
-         withCredentials: true
-      }
-   );
+const fetchDocumentFields = async (token: any) => {
+   const response = await apiService.get(`/document-field`, {
+      isExport: true,
+   }, {
+      Authorization: `Bearer ${token}`,
+   });
    return response;
 }
 
-const fetchDocumentTypes = async () => {
-   const cookieStore = cookies();
-   const accessToken = cookieStore.get("accessToken")?.value;
-
-   const response = await axiosInstance.get(`/document-type`,
-      {
-         params: {
-            isExport: true,
-         },
-         headers: {
-            Authorization: `Bearer ${accessToken}`,
-         },
-         withCredentials: true
-      }
-   );
+const fetchDocumentTypes = async (token: any) => {
+   const response = await apiService.get(`/document-type`, {
+      isExport: true,
+   }, {
+      Authorization: `Bearer ${token}`,
+   });
    return response;
 }
 const mapDocument = (data: any) => {
@@ -103,12 +80,13 @@ const mapDocument = (data: any) => {
       documentField: document.documentField?.name,
       issuanceDate: document.issuanceDate && new Date(document.issuanceDate),
       effectiveDate: document.effectiveDate && new Date(document.effectiveDate),
-      storagePath: document.storagePath,
+      fileUrl: document.fileUrl,
       documentSize: document.documentSize,
       validityStatus: document.validityStatus,
-      isPublic: document.isPublic,
+      invalidDate: document.invalidDate && document.invalidDate && new Date(document.invalidDate),
       isRegulatory: document.isRegulatory,
       mimeType: document.mimeType,
+      syncStatus: document.syncStatus
    }));
    return documents;
 }
@@ -123,11 +101,20 @@ const mapProperty = (data: any) => {
 }
 
 const validateSearchParams = (params: any) => {
-   const { pageNumber, pageLimit, documentField, documentType, issuingBody, isRegulatory } = params;
+   const { 
+      pageNumber, 
+      pageLimit, 
+      documentField, 
+      documentType, 
+      issuingBody, 
+      isRegulatory,
+      isValid,
+      isSync,  
+   } = params;
 
    const isNumberOrNull = (value: any) =>
       value === null || (!isNaN(parseInt(value)) && parseInt(value) > 0);
-   const isRegulatoryValue = (value: any) =>
+   const isBooleanStringValue = (value: any) =>
       value ? value === 'true' || value === 'false' ? value : undefined : undefined;
 
    return {
@@ -136,11 +123,15 @@ const validateSearchParams = (params: any) => {
       documentField: isNumberOrNull(documentField) ? parseInt(documentField) : null,
       documentType: isNumberOrNull(documentType) ? parseInt(documentType) : null,
       issuingBody: isNumberOrNull(issuingBody) ? parseInt(issuingBody) : null,
-      isRegulatory: isRegulatoryValue(isRegulatory),
+      isRegulatory: isBooleanStringValue(isRegulatory),
+      isValid: isBooleanStringValue(isValid),
+      isSync: isBooleanStringValue(isSync),
    };
 };
 
-export default async function DocumentPage({ searchParams }: { searchParams: any }) {
+export default async function DocumentPage(props: { searchParams: Promise<any> }) {
+   const token = await getAccessToken();
+   const searchParams = await props.searchParams;
    const { searchKey = '' } = searchParams;
    const {
       pageNumber,
@@ -149,12 +140,14 @@ export default async function DocumentPage({ searchParams }: { searchParams: any
       documentType,
       issuingBody,
       isRegulatory,
+      isValid,
+      isSync,
    } = validateSearchParams(searchParams);
 
    try {
-      const responseIssuingBodies = await fetchIssuingBodies();
-      const responseDocumentFields = await fetchDocumentFields();
-      const responseDocumentTypes = await fetchDocumentTypes();
+      const responseIssuingBodies = await fetchIssuingBodies(token);
+      const responseDocumentFields = await fetchDocumentFields(token);
+      const responseDocumentTypes = await fetchDocumentTypes(token);
       const responseDocuments =
          await fetchData(
             searchKey,
@@ -163,7 +156,10 @@ export default async function DocumentPage({ searchParams }: { searchParams: any
             documentField,
             documentType,
             issuingBody,
-            isRegulatory
+            isRegulatory,
+            isValid,
+            isSync,
+            token,
          );
 
       if (
@@ -174,22 +170,27 @@ export default async function DocumentPage({ searchParams }: { searchParams: any
       ) {
          return (
             <div className="flex flex-col items-center justify-center mt-24 gap-3">
-               <span>Có lỗi phía server. Vui lòng thử lại sau.</span>
+               <span>Có lỗi phía server. Vui lòng thử lại sau</span>
             </div>
          )
       }
 
-      const issuingBodies = mapProperty(responseIssuingBodies.data.data);
-      const documentFields = mapProperty(responseDocumentFields.data.data);
-      const documentTypes = mapProperty(responseDocumentTypes.data.data);
+      const documentsData = await responseDocuments.json();
+      const issuingBodiesData = await responseIssuingBodies.json();
+      const documentFieldsData = await responseDocumentFields.json();
+      const documentTypesData = await responseDocumentTypes.json();
 
-      const documentsData: DocumentItem[] = mapDocument(responseDocuments.data.data);
-      const total = responseDocuments.data.total;
+      const issuingBodies = mapProperty(issuingBodiesData.data);
+      const documentFields = mapProperty(documentFieldsData.data);
+      const documentTypes = mapProperty(documentTypesData.data);
+
+      const documents: DocumentItem[] = mapDocument(documentsData.data);
+      const total = documentsData.total;
 
       return (
          <Suspense fallback={<Loading />}>
             <div className="h-full w-full">
-               <div className="flex pt-20 px-6 justify-between">
+               <div className="flex pt-20 px-6 justify-between relative">
                   <FilterDocumentComponent
                      pageLimit={pageLimit}
                      searchKey={searchKey}
@@ -199,11 +200,13 @@ export default async function DocumentPage({ searchParams }: { searchParams: any
                      issuingBodies={issuingBodies}
                      documentFields={documentFields}
                      documentTypes={documentTypes}
-                     isRegulatory={isRegulatory ? isRegulatory : ""} />
+                     isRegulatory={isRegulatory ? isRegulatory : ""} 
+                     isValid={isValid ? isValid : ""}
+                     isSync={isSync ? isSync : ""}/>
                   <AddDocumentModal />
                </div>
                <div className="mt-3 flex flex-col relative px-6">
-                  <DocumentTable documents={documentsData} pageLimit={pageLimit} pageNumber={pageNumber} />
+                  <DocumentTable documents={documents} />
                   <PaginationComponent total={total} pageLimit={pageLimit} currentPage={pageNumber} pageURI="/manage/document" />
                </div>
             </div>
@@ -212,7 +215,7 @@ export default async function DocumentPage({ searchParams }: { searchParams: any
    } catch {
       return (
          <div className="flex flex-col items-center justify-center mt-24 gap-3">
-            <span>Có lỗi phía server. Vui lòng thử lại sau.</span>
+            <span>Có lỗi phía server. Vui lòng thử lại sau</span>
          </div>
       )
    }

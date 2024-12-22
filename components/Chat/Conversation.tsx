@@ -1,3 +1,4 @@
+'use client';
 import {
    TbCheck,
    TbMessage,
@@ -140,10 +141,10 @@ export const ConversationComponent = ({ conversation }: Props) => {
    return (
       <div className="relative flex items-center transition-all ease-in-out duration-150">
          {isRenaming && selectedConversation?.id === conversation.id ? (
-            <div className="flex w-full items-center gap-3 rounded-lg dark:bg-neutral-800 p-3">
+            <div className="flex w-full items-center gap-3 rounded-lg bg-[#F9F9F9] hover:bg-[#ECECEC] dark:bg-sb-black dark:hover:bg-neutral-800 transition-colors duration-200 p-3">
                <TbMessage size={18} />
                <input
-                  className="mr-12 flex-1 overflow-hidden overflow-ellipsis border-neutral-400 text-left text-[14px] leading-3 text-white outline-none focus:border-neutral-100"
+                  className="p-1 mr-12 flex-1 rounded-sm overflow-hidden overflow-ellipsis border-neutral-400 text-left text-[14px] leading-3 text-black dark:text-white outline-none focus:border-neutral-100"
                   type="text"
                   value={renameValue}
                   onChange={(e) => setRenameValue(e.target.value)}
@@ -175,13 +176,13 @@ export const ConversationComponent = ({ conversation }: Props) => {
          {(isDeleting || isRenaming) && selectedConversation?.id === conversation.id && (
             <div className="absolute right-1 z-10 flex text-gray-300">
                <button
-                  className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
+                  className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-800 dark:text-neutral-500 dark:hover:text-white"
                   onClick={handleConfirm}
                >
                   <TbCheck size={18} />
                </button>
                <button
-                  className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-100"
+                  className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-800 dark:text-neutral-500 dark:hover:text-white"
                   onClick={handleCancel}
                >
                   <HiXMark size={18} />

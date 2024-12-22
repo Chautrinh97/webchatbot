@@ -4,7 +4,6 @@ import { TbAlertCircle } from "react-icons/tb";
 import { AuthorityGroupSchema } from "@/types/validation";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, successToast } from "@/utils/toast";
 import {
@@ -19,6 +18,7 @@ import {
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { MdEdit } from "react-icons/md";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
 
 type EditAuthorityGroupForm = z.TypeOf<typeof AuthorityGroupSchema>;
 export const EditAuthorityGroupModal = ({ id, isDisabled }: { id: number | undefined, isDisabled: boolean }) => {
@@ -36,9 +36,7 @@ export const EditAuthorityGroupModal = ({ id, isDisabled }: { id: number | undef
 
    const fetchAuthorityGroup = async () => {
       try {
-         const response = await axiosInstance.get(`/permission/${id}`, {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.get(`/permission/${id}`);
          if (response.status === StatusCodes.NOT_FOUND) {
             errorToast('Nhóm quyền không tồn tại. Đang làm mới...');
             onClose();
@@ -46,11 +44,12 @@ export const EditAuthorityGroupModal = ({ id, isDisabled }: { id: number | undef
             return;
          }
 
-         setValue('name', response.data.name);
-         setValue('description', response.data.description);
+         const result = await response.json();
+         setValue('name', result.name);
+         setValue('description', result.description);
          onOpen();
       } catch (error) {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          return;
       }
    }
@@ -62,11 +61,9 @@ export const EditAuthorityGroupModal = ({ id, isDisabled }: { id: number | undef
 
    const onSubmit: SubmitHandler<EditAuthorityGroupForm> = async (data) => {
       try {
-         const response = await axiosInstance.put(`/permission/${id}`, JSON.stringify(data), {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.put(`/permission/${id}`, data);
          if (response.status === StatusCodes.CONFLICT) {
-            setError('name', { message: 'Tên nhóm quyền đã tồn tại. Vui lòng dùng tên khác.' });
+            setError('name', { message: 'Tên nhóm quyền đã tồn tại. Vui lòng dùng tên khác' });
             return;
          }
 
@@ -75,7 +72,7 @@ export const EditAuthorityGroupModal = ({ id, isDisabled }: { id: number | undef
          router.refresh();
          return;
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          onClose();
          return;
       }
@@ -90,9 +87,11 @@ export const EditAuthorityGroupModal = ({ id, isDisabled }: { id: number | undef
             <MdEdit size={20} />Sửa
          </button>
          <Modal
+            backdrop="blur"
             size="xl"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (

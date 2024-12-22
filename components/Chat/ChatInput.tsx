@@ -1,6 +1,7 @@
+'use client'
 import { useAppStore } from '@/app/store/app.store';
 import { Message } from '@/types/chat';
-import { warnToast } from '@/utils/toast';
+import { errorToastShort } from '@/utils/toast';
 import {
    KeyboardEvent,
    MutableRefObject,
@@ -40,7 +41,6 @@ export const ChatInput = ({
 
    const [content, setContent] = useState<string>();
    const [isTyping, setIsTyping] = useState<boolean>(false);
-   const {state: {selectedDepartment}} = useAppStore();
 
    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       const value = e.target.value;
@@ -48,17 +48,17 @@ export const ChatInput = ({
    };
 
    const handleSend = () => {
-      if (!selectedDepartment.id) {
-         warnToast('Vui lòng chọn phòng ban.');
-         return;
-      }
       if (messageIsStreaming) {
          return;
       }
       if (!content) {
          return;
       }
-      onSend({ role: 'user', content });
+      if (content.length > 300) {
+         errorToastShort("Câu hỏi vượt quá độ dài cho phép.")
+         return;
+      }
+      onSend({ role: 'user', content: content.trim() });
       setContent('');
 
       if (window.innerWidth < 640 && textareaRef && textareaRef.current) {
@@ -73,16 +73,8 @@ export const ChatInput = ({
       }, 1000);
    };
 
-   const isMobile = () => {
-      const userAgent =
-         typeof window.navigator === 'undefined' ? '' : navigator.userAgent;
-      const mobileRegex =
-         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|mobile|CriOS/i;
-      return mobileRegex.test(userAgent);
-   };
-
    const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !isTyping && !isMobile() && !e.shiftKey) {
+      if (e.key === 'Enter' && !isTyping && !e.shiftKey) {
          e.preventDefault();
          handleSend();
       } else if (e.key === '/' && e.metaKey) {
@@ -113,7 +105,10 @@ export const ChatInput = ({
 
             {!messageIsStreaming && selectedConversation && selectedConversation.messages.length > 0 && (
                <button
-                  className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 md:mb-0 md:mt-2 py-2 px-4 rounded border border-neutral-300 transition-all ease-in-out duration-150 bg-white text-black opacity-90 hover:opacity-100 dark:border-neutral-600 dark:bg-[#2f2f2f] dark:text-white "
+                  className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 md:mb-0 md:mt-2 py-2 px-4 rounded 
+                  border border-neutral-300 transition-all ease-in-out duration-150 bg-white text-black opacity-90 
+                  hover:opacity-100 dark:border-neutral-600 dark:bg-[#2f2f2f] dark:text-white 
+                  hover:bg-neutral-200 dark:hover:bg-neutral-700"
                   onClick={onRegenerate}
                >
                   <TbRepeat size={18} /> Làm mới câu trả lời
@@ -128,6 +123,7 @@ export const ChatInput = ({
                </div>
                <textarea
                   ref={textareaRef}
+                  disabled={messageIsStreaming}
                   className="m-0 w-full resize-none rounded-[25px] min-h-10 focus:outline-none border-0 p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white md:py-3 md:pl-10"
                   style={{
                      bottom: `${textareaRef?.current?.scrollHeight}px`,

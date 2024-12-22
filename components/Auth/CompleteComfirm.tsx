@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { StatusCodes } from 'http-status-codes';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { basicToast } from '@/utils/toast';
-import axiosInstance from '@/app/apiService/axios';
+import {apiService} from '@/app/apiService/apiService';
 
 export function CompleteConfirmComponent() {
    const searchParams = useSearchParams();
@@ -14,12 +14,10 @@ export function CompleteConfirmComponent() {
    useEffect(() => {
       const confirmEmail = async () => {
          try {
-            const response = await axiosInstance.post(
-               '/auth/confirm-email',
-               JSON.stringify({
-                  token: verifyToken,
-               }),
-            );
+            const response = await apiService.post(
+               '/auth/confirm-email', {
+               token: verifyToken,
+            });
 
             if (response.status === StatusCodes.CONFLICT) {
                setMessage('Email đã được xác nhận trước đây.');

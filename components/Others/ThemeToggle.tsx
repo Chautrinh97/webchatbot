@@ -1,7 +1,6 @@
 "use client"
 import { HiMiniMoon, HiMiniSun } from 'react-icons/hi2';
 import { useTheme } from 'next-themes';
-import { useEffect } from 'react';
 
 export const ThemeToggle: React.FC<{ isVertical?: boolean }> = ({ isVertical = false }) => {
    const { setTheme, resolvedTheme } = useTheme();

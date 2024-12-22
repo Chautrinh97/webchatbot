@@ -1,21 +1,21 @@
 "use client"
 import { useAppStore } from "@/app/store/app.store";
-import { ChatBody, Conversation, Department, Message } from "@/types/chat";
+import { Conversation, Message } from "@/types/chat";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { MemoizedChatMessage } from "./MemoizedChatMessage";
 import { ChatInput } from "./ChatInput";
 import { ChatLoader } from "./ChatLoader";
-import { generateRandomString } from "@/utils/string";
 import { updateConversation } from "@/utils/conversation";
 import { throttle } from "@/utils/throttle";
 import Image from 'next/image'
-import { SelectDepartment } from "./SelectDepartment";
+import { errorToast } from "@/utils/toast";
+import { HttpStatusCode } from "axios";
+import icon from "../../app/icon_75.jpg"
 
 type Props = {
    conversationId?: string;
-   // departments?: Department[];
 }
-const ChatArea: React.FC<Props> = ({ conversationId: id = ""}) => {
+const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
    const {
       state: {
          isLoading,
@@ -36,7 +36,7 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = ""}) => {
    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
    const handleSend = useCallback(
-      (message: Message, deleteCount = 0) => {
+      async (message: Message, deleteCount = 0) => {
          if (!selectedConversation) return;
          let updatedConversation: Conversation;
          if (deleteCount) {
@@ -58,13 +58,29 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = ""}) => {
          dispatch("isLoading", true);
          dispatch("messageIsStreaming", true);
 
-         const chatBody: ChatBody = {
-            prompt: updatedConversation.messages.map(message => message.content).join(' ')
-         }
          const controller = new AbortController();
-         //Phan goi API 
-         const dataResponse: string = generateRandomString(50);
-         //Phan goi API
+         let response;
+         try {
+            response = await fetch(`${process.env.API_ENDPOINT}/conversation/chat`, {
+               method: "POST",
+               headers: { 'Content-Type': 'application/json'},
+               body: JSON.stringify({ question: message.content }),
+               signal: controller.signal,
+               credentials: 'include',
+            })
+            // errorToast(response.status.toString())
+            if (!response.body || response.status !== HttpStatusCode.Created) {
+               errorToast('Không nhận được phản hồi từ server');
+               dispatch('messageIsStreaming', false);
+               dispatch('isLoading', false);
+               return;
+            }
+         } catch {
+            errorToast('Có lỗi xảy ra khi truy vấn. Vui lòng thử lại sau');
+            dispatch('messageIsStreaming', false);
+            return;
+         }
+
          if (updatedConversation.messages.length === 1) {
             const { content } = message;
             const customName =
@@ -74,37 +90,55 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = ""}) => {
                title: customName,
             };
          }
+
          dispatch('isLoading', false);
 
+         let doneFlag = false;
+         const reader = response.body.getReader();
+         const decoder = new TextDecoder();
+         let text = '';
          let isFirst = true;
-         if (isFirst) {
-            isFirst = false;
-            const updatedMessages: Message[] = [
-               ...updatedConversation.messages,
-               { role: 'assistant', content: dataResponse },
-            ];
-            updatedConversation = {
-               ...updatedConversation,
-               messages: updatedMessages,
-            };
-            dispatch('selectedConversation', updatedConversation);
 
-         } else {
-            const updatedMessages: Message[] =
-               updatedConversation.messages.map((message, index) => {
-                  if (index === updatedConversation.messages.length - 1) {
-                     return {
-                        ...message,
-                        content: dataResponse,
-                     };
-                  }
-                  return message;
-               });
-            updatedConversation = {
-               ...updatedConversation,
-               messages: updatedMessages,
-            };
-            dispatch('selectedConversation', updatedConversation);
+         while (!doneFlag) {
+            if (stopConversationRef.current === true) {
+               controller.abort();
+               doneFlag = true;
+               break;
+            }
+            const { value, done: doneReading } = await reader.read();
+            doneFlag = doneReading;
+            const chunkValue = decoder.decode(value, { stream: true });
+            text += chunkValue;
+
+            if (isFirst) {
+               isFirst = false;
+               const updatedMessages: Message[] = [
+                  ...updatedConversation.messages,
+                  { role: 'assistant', content: chunkValue },
+               ];
+               updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+               };
+               dispatch('selectedConversation', updatedConversation);
+
+            } else {
+               const updatedMessages: Message[] =
+                  updatedConversation.messages.map((message, index) => {
+                     if (index === updatedConversation.messages.length - 1) {
+                        return {
+                           ...message,
+                           content: text,
+                        };
+                     }
+                     return message;
+                  });
+               updatedConversation = {
+                  ...updatedConversation,
+                  messages: updatedMessages,
+               };
+               dispatch('selectedConversation', updatedConversation);
+            }
          }
 
          const { all } = updateConversation(updatedConversation, conversations);
@@ -180,16 +214,15 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = ""}) => {
    return (
       <>
          <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#212121]">
-            {/* <SelectDepartment departments={departments} /> */}
             {!selectedConversation?.messages.length ? (
                <div className="m-auto h-full flex flex-col items-center justify-center space-y-5 md:space-y-10 px-3 pt-5 md:pt-12 sm:max-w-[600px]">
                   <Image
-                     src="/icon.jpg"
+                     src={icon}
                      alt="Logo Chatbot"
                      width={60}
                      height={60}
-                     className="rounded-full hover:animate-bounceupdown" 
-                     loading='lazy'/>
+                     className="rounded-full hover:animate-bounceupdown"
+                     loading='lazy' />
                   <div className="opacity-70">Hãy đặt một câu hỏi...</div>
                </div>
             ) : (
@@ -200,6 +233,10 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = ""}) => {
                >
                   {selectedConversation?.messages.map((message, index) => (
                      <MemoizedChatMessage
+                        onSend={(message) => {
+                           setCurrentMessage(message);
+                           handleSend(message, 0);
+                        }}
                         key={index}
                         message={message}
                         messageIndex={index}

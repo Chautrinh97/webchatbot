@@ -5,7 +5,6 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import { DocumentPropertiesSchema } from "@/types/validation";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, successToast } from "@/utils/toast";
 import {
@@ -20,59 +19,67 @@ import {
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/app/store/user.store";
-import { UserRoleConstant } from "@/utils/constant";
+import { UserPermissionConstant } from "@/utils/constant";
+import { useState } from "react";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
 
 type AddDocumentPropertiesForm = z.TypeOf<typeof DocumentPropertiesSchema>;
 export const AddDocumentPropertiesModal = (
    { propertyText, propertyApiURI, propertyPermission }:
       { propertyText: string, propertyApiURI: string, propertyPermission: string }) => {
    const router = useRouter();
+   const [action, setAction] = useState<"close" | "continue" | null>(null);
    const { isOpen, onOpen, onClose } = useDisclosure();
    const {
       register,
       handleSubmit,
       formState: { errors },
       setError,
+      reset,
    } = useForm<AddDocumentPropertiesForm>({
       resolver: zodResolver(DocumentPropertiesSchema),
    });
    const { user } = useUserStore();
-   const hasPermission = user.permissions?.some((permission) => permission === propertyPermission);
-
    const onSubmit: SubmitHandler<AddDocumentPropertiesForm> = async (data) => {
       try {
-         const response = await axiosInstance.post(`${propertyApiURI}`, JSON.stringify(data), {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.post(`${propertyApiURI}`, data);
          if (response.status === StatusCodes.CONFLICT) {
             setError('name', { message: `Tên ${propertyText} đã tồn tại, hãy dùng tên khác.` });
             return;
          }
          else if (response.status === StatusCodes.FORBIDDEN) {
-            errorToast('Bạn không có quyền thực hiện   này.');
+            errorToast('Bạn không có quyền thực hiện tác vụ này.');
             return;
          }
          successToast('Thêm thành công.');
-         onClose();
-         router.refresh();
+         if (action === "close") {
+            reset({ name: "", description: "" });
+            onClose();
+            router.refresh();
+         } else if (action === "continue") {
+            reset({ name: "", description: "" });
+            router.refresh();
+         }
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
       }
    }
 
    return (
       <>
-         {(user.role === UserRoleConstant.SUPERADMIN || hasPermission) &&
-            <Button className="flex gap-2 p-3 rounded-md text-white bg-blue-700 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-               onPress={onOpen}>
+         {user.permissions?.some((perm) => perm === UserPermissionConstant.MANAGE_DOCUMENTS_PROPERTIES) &&
+            <button className="flex gap-2 p-3 rounded-md text-white bg-blue-600 border hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+               onClick={onOpen}>
                <TbPlus size={20} />
                Thêm {propertyText}
-            </Button>
+            </button>
          }
          <Modal
+            backdrop="blur"
             size="xl"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
@@ -126,8 +133,21 @@ export const AddDocumentPropertiesModal = (
                         </ModalBody>
                         <Divider />
                         <ModalFooter>
-                           <Button type="submit" className="rounded-md text-white bg-blue-700 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                              Tiếp tục
+                           <Button
+                              type="submit"
+                              onPress={() => setAction("close")}
+                              className="rounded-md text-white bg-blue-700 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none 
+                           focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                           >
+                              Thêm và đóng
+                           </Button>
+                           <Button
+                              type="submit"
+                              onPress={() => setAction("continue")}
+                              className="rounded-md text-white bg-blue-700 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none 
+                           focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                           >
+                              Thêm và tiếp tục
                            </Button>
                            <Button color="danger" className="rounded-md" variant="light" onPress={onClose}>
                               Đóng

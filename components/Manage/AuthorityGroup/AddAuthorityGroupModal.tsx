@@ -4,7 +4,6 @@ import { TbAlertCircle } from "react-icons/tb";
 import { AuthorityGroupSchema } from "@/types/validation";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, successToast } from "@/utils/toast";
 import {
@@ -19,6 +18,7 @@ import {
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { MdAdd } from "react-icons/md";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
 
 type AddAuthorityGroupForm = z.TypeOf<typeof AuthorityGroupSchema>;
 export const AddAuthorityGroupModal = () => {
@@ -35,9 +35,7 @@ export const AddAuthorityGroupModal = () => {
 
    const onSubmit: SubmitHandler<AddAuthorityGroupForm> = async (data) => {
       try {
-         const response = await axiosInstance.post(`/permission/`, JSON.stringify(data), {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.post(`/permission/`, data);
          if (response.status === StatusCodes.CONFLICT) {
             setError('name', { message: 'Tên nhóm quyền đã tồn tại. Vui lòng dùng tên khác.' });
             return;
@@ -47,7 +45,7 @@ export const AddAuthorityGroupModal = () => {
          router.refresh();
          return;
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          onClose();
          return;
       }
@@ -61,9 +59,11 @@ export const AddAuthorityGroupModal = () => {
             <MdAdd size={20} /> Thêm nhóm
          </button>
          <Modal
+            backdrop="blur"
             size="xl"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (

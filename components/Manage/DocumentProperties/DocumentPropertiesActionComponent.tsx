@@ -2,7 +2,7 @@
 import { useUserStore } from "@/app/store/user.store";
 import { DeleteDocumentPropertiesModal } from "./DeleteDocumentPropertiesModal";
 import { EditDocumentPropertiesModal } from "./EditDocumentPropertiesModal";
-import { UserRoleConstant } from "@/utils/constant";
+import { UserPermissionConstant, UserRoleConstant } from "@/utils/constant";
 
 export const DocumentPropertiesActionComponent = (
    {
@@ -18,9 +18,9 @@ export const DocumentPropertiesActionComponent = (
       propertyPermission: string
    }) => {
    const { user } = useUserStore();
-   const hasPermission = user.permissions?.some((permission) => permission === propertyPermission);
+   const hasPermission = user.permissions?.some((permission) => permission === UserPermissionConstant.MANAGE_DOCUMENTS_PROPERTIES);
 
-   if (user.role === UserRoleConstant.SUPERADMIN || hasPermission)
+   if (hasPermission)
       return <>
          <EditDocumentPropertiesModal
             id={id}

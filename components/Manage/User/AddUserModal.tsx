@@ -5,9 +5,8 @@ import { RiUserAddLine } from "react-icons/ri";
 import { AddUserFormSchema } from "@/types/validation";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
-import { errorToast, successToast } from "@/utils/toast";
+import { errorToast, errorToastUp, successToast } from "@/utils/toast";
 import {
    Button,
    Modal,
@@ -21,26 +20,33 @@ import {
 import { useState } from "react";
 import { AuthorityGroup } from "@/types/manage";
 import { useRouter } from "next/navigation";
+import { UserRoleConstant } from "@/utils/constant";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { useUserStore } from "@/app/store/user.store";
 
 type AddUserForm = z.TypeOf<typeof AddUserFormSchema>;
 export const AddUserModal = () => {
    const router = useRouter();
    const { isOpen, onOpen, onClose } = useDisclosure();
+   const [action, setAction] = useState<"close" | "continue" | null>(null);
    const [authorityGroups, setAuthorityGroups] = useState<AuthorityGroup[]>([]);
    const {
       register,
       handleSubmit,
       formState: { errors },
       setError,
+      reset,
    } = useForm<AddUserForm>({
       resolver: zodResolver(AddUserFormSchema),
+      defaultValues: { role: UserRoleConstant.GUEST }
    });
+   const { user } = useUserStore();
 
    const fetchAuthorityGroups = async () => {
       try {
-         const response = await axiosInstance.get('/permission', { withCredentials: true });
-         const result = response.data.data;
-         setAuthorityGroups(result);
+         const response = await apiServiceClient.get('/permission');
+         const result = await response.json();
+         setAuthorityGroups(result.data);
       }
       catch (error) {
          errorToast('Có lỗi xảy ra, vui lòng thử lại sau');
@@ -54,36 +60,53 @@ export const AddUserModal = () => {
 
    const onSubmit: SubmitHandler<AddUserForm> = async (data) => {
       try {
-         const response = await axiosInstance.post(`/user/`, JSON.stringify(data), {
-            withCredentials: true,
-         });
-         if (response.status === StatusCodes.BAD_REQUEST) {
-            errorToast('Có lỗi xảy ra khi gửi email xác thực. Vui lòng thử lại sau.')
-            return;
-         }
+         const response = await apiServiceClient.post(`/user/`, data);
          if (response.status === StatusCodes.CONFLICT) {
-            setError('email', { message: 'Email đã tồn tại, nhập email khác.' });
+            const message = (await response.json()).message;
+            if (message === "EXIST_EMAIL")
+               setError('email', { message: 'Email đã tồn tại, nhập email khác' });
+            else {
+               errorToastUp('Không thể đặt nhóm quyền cho người dùng Khách');
+            }
+            return;
+         } else if (response.status === StatusCodes.NOT_FOUND) {
+            errorToast('Nhóm quyền không tồn tại. Đang làm mới...');
+            onClose();
+            router.refresh();
+            return;
+         } else if (response.status === StatusCodes.FORBIDDEN) {
+            errorToastUp('Bạn không được phép đặt nhóm quyền cho người dùng');
             return;
          }
          successToast('Thêm thành công.');
-         onClose();
-         router.refresh();
-         return;
+         if (action === 'close') {
+            reset({ email: "", fullName: "", role: UserRoleConstant.GUEST, authorityGroup: null, password: "" });
+            onClose();
+            router.refresh();
+            return;
+         } else if (action === 'continue') {
+            reset({ email: "", fullName: "", role: UserRoleConstant.GUEST, authorityGroup: null, password: "" });
+            router.refresh();
+            return;
+         }
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
+         return;
       }
    }
 
    return (
       <>
-         <Button className="flex gap-2 p-3 rounded-md text-white bg-blue-700 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            onPress={handleOpenModal}>
+         <button className="flex gap-2 p-3 rounded-md text-white bg-blue-600 border hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            onClick={handleOpenModal}>
             <TbPlus size={20} /> Thêm người dùng
-         </Button>
+         </button>
          <Modal
+            backdrop="blur"
             size="xl"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
@@ -154,11 +177,29 @@ export const AddUserModal = () => {
                               </div>
                               <div className="sm:col-span-4">
                                  <label htmlFor="name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
+                                    Vai trò
+                                 </label>
+                              </div>
+                              <div className="sm:col-span-8">
+                                 <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
+                                    <select className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 
+                                    block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       {...register('role')}>
+                                       <option value="guest">Khách</option>
+                                       <option value="officer">Cán bộ. nhân viên</option>
+                                    </select>
+                                 </div>
+                              </div>
+                              <div className="sm:col-span-4">
+                                 <label htmlFor="name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                     Nhóm quyền
                                  </label>
                               </div>
                               <div className="sm:col-span-8 flex items-center mt-2.5">
-                                 <select className="w-full" {...register('authorityGroup')}>
+                                 <select className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-1 
+                                 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                    disabled={user.role!==UserRoleConstant.SUPERADMIN}
+                                    {...register('authorityGroup')}>
                                     <option value="">Chọn nhóm quyền</option>
                                     {authorityGroups.map((authorityGroup) => (
                                        <option key={authorityGroup.id} value={authorityGroup.id}>
@@ -171,8 +212,16 @@ export const AddUserModal = () => {
                         </ModalBody>
                         <Divider />
                         <ModalFooter>
-                           <Button type="submit" className="rounded-md text-white bg-blue-700 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                              Tiếp tục
+                           <Button type="submit"
+                              className="rounded-md text-white bg-blue-700 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none 
+                           focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                              onPress={() => setAction('close')}>
+                              Thêm và đóng
+                           </Button>
+                           <Button type="submit"
+                              onPress={() => { setAction('continue') }}
+                              className="rounded-md text-white bg-blue-700 border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                              Thêm và tiếp tục
                            </Button>
                            <Button color="danger" className="rounded-md" variant="light" onPress={onClose}>
                               Đóng

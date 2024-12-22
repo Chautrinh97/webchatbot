@@ -5,9 +5,8 @@ import { TbUserEdit } from "react-icons/tb";
 import { EditUserSchemaUnverified, EditUserSchemaVerified } from "@/types/validation";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
-import { errorToast, successToast } from "@/utils/toast";
+import { errorToast, errorToastUp, successToast } from "@/utils/toast";
 import {
    Button,
    Modal,
@@ -17,10 +16,13 @@ import {
    ModalFooter,
    useDisclosure,
    Divider,
+   Tooltip,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthorityGroup } from "@/types/manage";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { useUserStore } from "@/app/store/user.store";
 
 export type EditVerifiedUserForm = z.TypeOf<typeof EditUserSchemaVerified>;
 export type EditUnverifiedUserUserForm = z.TypeOf<typeof EditUserSchemaUnverified>;
@@ -30,6 +32,7 @@ export const EditUserModal = ({ id }: { id: number }) => {
    const modalUnverified = useDisclosure();
    const [authorityGroups, setAuthorityGroups] = useState<AuthorityGroup[]>([]);
    const [isVerified, setIsVerified] = useState<boolean>(false);
+   const { user } = useUserStore(); 
 
    const {
       register: registerVerified,
@@ -52,66 +55,87 @@ export const EditUserModal = ({ id }: { id: number }) => {
    });
 
    const fetchAuthorityGroups = async () => {
-      const response = await axiosInstance.get('/permission', { withCredentials: true });
-      const result = response.data.data;
+      const response = await apiServiceClient.get('/permission');
+      const result = (await response.json()).data;
       setAuthorityGroups(result);
    }
 
    const fetchUser = async () => {
-      const response = await axiosInstance.get(`/user/${id}`, { withCredentials: true });
+      const response = await apiServiceClient.get(`/user/${id}`);
       if (response.status === StatusCodes.NOT_FOUND) {
-         errorToast(`Không tồn tại người dùng này.`);
+         errorToast(`Không tồn tại người dùng này`);
          router.refresh();
          return;
+      } else if (response.status === StatusCodes.FORBIDDEN) {
+         errorToast('Bạn không được phép cập nhật người dùng này');
+         return;
       }
-      setIsVerified(response.data.isVerified);
-      if (response.data.isVerified) {
-         setValueVerfied('fullName', response.data.fullName);
-         setValueVerfied('email', response.data.email);
-         setValueVerfied('authorityGroup', response.data.authorityGroup?.id);
+      const result = await response.json();
+      setIsVerified(result.isVerified);
+      if (result.isVerified) {
+         setValueVerfied('fullName', result.fullName);
+         setValueVerfied('email', result.email);
+         setValueVerfied('authorityGroup', result.authorityGroup?.id);
          modalVerified.onOpen();
       } else {
-         setValueUnverified('fullName', response.data.fullName);
-         setValueUnverified('email', response.data.email);
-         setValueUnverified('authorityGroup', response.data.authorityGroup?.id);
+         setValueUnverified('fullName', result.fullName);
+         setValueUnverified('email', result.email);
+         setValueUnverified('authorityGroup', result.authorityGroup?.id);
          modalUnverified.onOpen();
       }
    }
 
    const onSubmitUnverified: SubmitHandler<EditUnverifiedUserUserForm> = async (data) => {
       try {
-         const response = await axiosInstance.put(`/user/${id}`, JSON.stringify(data), {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.put(`/user/${id}`, data);
          if (response.status === StatusCodes.CONFLICT) {
-            setErrorUnverified('email', { message: `Email đã tồn tại, hãy nhập email khác.` });
+            setErrorUnverified('email', { message: 'Email đã tồn tại, nhập email khác' });
             return;
          }
          if (response.status === StatusCodes.NOT_FOUND) {
-            errorToast('Dữ liệu không tồn tại trên hệ thống, đang làm mới...');
+            errorToast('Có dữ liệu không tồn tại. Đang làm mới...');
             modalUnverified.onClose();
             router.refresh();
             return;
          }
-         successToast('Cập nhật thành công.');
+         if (response.status === StatusCodes.FORBIDDEN) {
+            const message = (await response.json()).message;
+            if (message === 'VERIFIED_USER') {
+               errorToastUp('Tài khoản này đã xác minh email. Đang làm mới...');
+               modalUnverified.onClose();
+               router.refresh();
+               return;
+            } else if (message === 'NOT_ALLOW_SET_AUTHORITY')
+               errorToast('Chỉ có quản trị viên mới được phép đặt nhóm quyền');
+            else if (message === "GUESS_ACCOUNT")
+               errorToast('Không thể đặt nhóm quyền cho người dùng Khách');
+            return;
+         }
+         successToast('Cập nhật thành công');
          modalUnverified.onClose();
          router.refresh();
          return;
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          return;
       }
    }
 
    const onSubmitVerified: SubmitHandler<EditVerifiedUserForm> = async (data) => {
       try {
-         const response = await axiosInstance.put(`/user/${id}`, JSON.stringify(data), {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.put(`/user/${id}`, data);
          if (response.status === StatusCodes.NOT_FOUND) {
-            errorToast('Dữ liệu không tồn tại trên hệ thống, đang làm mới...');
+            errorToast('Có dữ liệu không tồn tại. Đang làm mới...');
             modalVerified.onClose();
             router.refresh();
+            return;
+         }
+         if (response.status === StatusCodes.FORBIDDEN) {
+            const message = (await response.json()).message;
+            if (message === 'NOT_ALLOW_SET_AUTHORITY')
+               errorToast('Chỉ có quản trị viên mới được phép đặt nhóm quyền');
+            else if (message === "GUESS_ACCOUNT")
+               errorToast('Không thể đặt nhóm quyền cho người dùng Khách');
             return;
          }
          successToast('Cập nhật thành công.');
@@ -119,7 +143,7 @@ export const EditUserModal = ({ id }: { id: number }) => {
          router.refresh();
          return;
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          return;
       }
    }
@@ -129,23 +153,29 @@ export const EditUserModal = ({ id }: { id: number }) => {
          fetchAuthorityGroups();
          fetchUser();
       } catch {
-         errorToast('Có lỗi khi tải dữ liệu. Vui lòng thử lại sau.');
+         errorToast('Có lỗi khi tải dữ liệu. Vui lòng thử lại sau');
          return;
       }
    }
 
    return (
       <>
-         <button
-            onClick={handleOpenModal}
-            title="Cập nhật"
-            className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none dark:text-blue-500 dark:hover:text-blue-400">
-            <TbEdit size={20} />
-         </button>
+         <Tooltip content='Cập nhật' placement={'left'}>
+            <button
+               onClick={handleOpenModal}
+               title="Cập nhật"
+               className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg 
+            border border-transparent text-blue-600 hover:text-blue-800 disabled:opacity-50 disabled:pointer-events-none 
+            dark:text-blue-500 dark:hover:text-blue-400 hover:animate-bounceupdown">
+               <TbEdit size={20} />
+            </button>
+         </Tooltip>
          <Modal
+            backdrop="blur"
             size="xl"
             isOpen={modalUnverified.isOpen}
             onClose={modalUnverified.onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
@@ -214,6 +244,22 @@ export const EditUserModal = ({ id }: { id: number }) => {
                                        <TbAlertCircle className="me-1" /> {errorUnverified.password?.message}
                                     </div>
                                  }
+
+                              </div>
+                              <div className="sm:col-span-4">
+                                 <label htmlFor="name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
+                                    Vai trò
+                                 </label>
+                              </div>
+                              <div className="sm:col-span-8">
+                                 <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
+                                    <select className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 
+                                    block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       {...registerUnverified('role')}>
+                                       <option value="guest">Khách</option>
+                                       <option value="officer">Cán bộ. nhân viên</option>
+                                    </select>
+                                 </div>
                               </div>
                               <div className="sm:col-span-4">
                                  <label htmlFor="name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
@@ -247,9 +293,11 @@ export const EditUserModal = ({ id }: { id: number }) => {
             </ModalContent>
          </Modal>
          <Modal
+            backdrop="blur"
             size="xl"
             isOpen={modalVerified.isOpen}
             onClose={modalVerified.onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
@@ -299,6 +347,21 @@ export const EditUserModal = ({ id }: { id: number }) => {
                                        <TbAlertCircle className="me-1" /> {errorVerified.email?.message}
                                     </div>
                                  }
+                              </div>
+                              <div className="sm:col-span-4">
+                                 <label htmlFor="name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
+                                    Vai trò
+                                 </label>
+                              </div>
+                              <div className="sm:col-span-8">
+                                 <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
+                                    <select className="border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 
+                                    block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                                       {...registerVerified('role')}>
+                                       <option value="guest">Khách</option>
+                                       <option value="officer">Cán bộ. nhân viên</option>
+                                    </select>
+                                 </div>
                               </div>
                               <div className="sm:col-span-4">
                                  <label htmlFor="name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">

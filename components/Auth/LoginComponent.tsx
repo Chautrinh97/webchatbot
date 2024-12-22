@@ -8,10 +8,10 @@ import { z } from "zod";
 import { StatusCodes } from "http-status-codes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { errorToast, successToast } from "@/utils/toast";
-import axiosInstance from "@/app/apiService/axios";
 import { useAppStore } from "@/app/store/app.store";
 import { LoginConstantMessage } from "@/utils/constant";
 import { TbMessageChatbot } from "react-icons/tb";
+import {apiService} from "@/app/apiService/apiService";
 
 type LoginFormData = z.TypeOf<typeof LoginFormSchema>;
 
@@ -32,7 +32,7 @@ export const LoginComponent = () => {
       if (isLoading) return;
       dispatch("isLoading", true);
       try {
-         const response = await axiosInstance.post('/auth/login', JSON.stringify(data));
+         const response = await apiService.post('/auth/login', data);
          if (response.status === StatusCodes.NOT_FOUND) {
             setError("email", { message: "Email không tồn tại." });
             return;
@@ -42,7 +42,7 @@ export const LoginComponent = () => {
             return;
          }
 
-         const result = response.data;
+         const result = await response.json();
          if (result.message === LoginConstantMessage.TEMPORARILY_BLOCKED) {
             errorToast('Tài khoản tạm thời bị khóa do đăng nhập sai nhiều lần.');
             return;
@@ -58,7 +58,8 @@ export const LoginComponent = () => {
             router.push(`/auth/confirm-email`);
             return;
          }
-
+         localStorage.setItem('accessToken', result.accessToken);
+         localStorage.setItem('refreshToken', result.refreshToken);
          await fetch("/api/auth", {
             method: "POST",
             body: JSON.stringify({
@@ -70,7 +71,7 @@ export const LoginComponent = () => {
          router.push(searchParams.get('redirect') || '/chat');
 
       } catch (error) {
-         errorToast('Có lỗi xảy ra.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
       } finally {
          dispatch("isLoading", false);
       }

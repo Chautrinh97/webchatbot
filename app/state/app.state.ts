@@ -1,10 +1,8 @@
-import { Conversation, Department, Message } from "@/types/chat";
+import { Conversation, Message } from "@/types/chat";
 export type AppState = {
    isLoading: boolean;
    isSidebarOpen: boolean;
    messageIsStreaming: boolean;
-   departments: Department[];
-   selectedDepartment: Department;  
    conversations: Conversation[];
    selectedConversation: Conversation;
    currentMessage: Message | undefined;
@@ -24,9 +22,4 @@ export const appInitState: AppState = {
    currentMessage: undefined,
    messageError: false,
    searchTerm: "",
-   departments: [],
-   selectedDepartment: {
-      id: "", 
-      name: "",
-   },
 };

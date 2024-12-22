@@ -1,24 +1,26 @@
+'use client';
 import {
    TbCheck,
    TbCopy,
    TbEdit,
    TbRobotFace,
-   TbTrash,
-   TbUser,
 } from 'react-icons/tb';
 import { FC, memo, useEffect, useRef, useState } from 'react';
-
 import { Message } from '@/types/chat';
-
 import { useAppStore } from '@/app/store/app.store';
+import ReactMarkdown from 'react-markdown';
+import rehypeRaw from 'rehype-raw';
+import rehypeHightlight from 'rehype-highlight'
+import remarkGfm from 'remark-gfm';
 
 export interface Props {
+   onSend: (message: Message) => void;
    message: Message;
    messageIndex: number;
    onEdit?: (editedMessage: Message) => void
 }
 
-export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) => {
+export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onSend }) => {
    const {
       state: {
          selectedConversation
@@ -52,6 +54,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
          }
       }
       setIsEditing(false);
+      onSend({ role: 'user', content: messageContent.trim() });
    };
 
    const handlePressEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -68,7 +71,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
          setMessageCopied(true);
          setTimeout(() => {
             setMessageCopied(false);
-         }, 2000);
+         }, 3000);
       });
    };
 
@@ -87,7 +90,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
    return message.role === "user" ?
       (
          <div className="w-full my-3">
-            <div className="py-2 px-3 text-base md:px-4 m-auto md:px-5 lg:px-1 xl:px-5">
+            <div className="py-2 px-3 text-base md:px-4 m-auto lg:px-1 xl:px-5">
                <div className="mx-auto flex flex-1 gap-3 text-base md:max-w-3xl lg:max-w-[40rem] xl:max-w-[48rem]">
                   <div className="group relative flex w-full min-w-0 flex-col items-end rtl:items-start min-h-[20px] whitespace-pre-wrap break-words overflow-x-auto gap-2"
                      style={{ overflowWrap: 'anywhere' }}>
@@ -109,7 +112,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                               <div className="rounded-3xl px-3 py-2 bg-[#ECECEC] dark:bg-[#424242]">
                                  <textarea
                                     ref={textareaRef}
-                                    className=" m-0 resize-none border-0 bg-[#ECECEC] dark:bg-[#424242] p-0 focus:outline-none overflow-y-"
+                                    className=" m-0 resize-none border-0 bg-[#ECECEC] dark:bg-[#424242] p-0 focus:outline-none overflow-y- w-full"
                                     value={messageContent}
                                     onChange={handleInputChange}
                                     onKeyDown={handlePressEnter}
@@ -144,9 +147,11 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                </div>
             </div>
          </div>
-      ) : (
+      ) :
+      // assistant style
+      (
          <div className="relative w-full my-3">
-            <div className="py-2 px-3 text-base md:px-4 m-auto md:px-5 lg:px-1 xl:px-5">
+            <div className="py-2 px-3 text-base md:px-4 m-auto lg:px-1 xl:px-5">
                <div className="mx-auto flex flex-1 gap-3 text-base md:max-w-3xl lg:max-w-[40rem] xl:max-w-[48rem]">
 
                   <div className="flex-shrink-0 flex flex-col relative items-end">
@@ -158,22 +163,23 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
                         </div>
                      </div>
                   </div>
-
-                  <div className="group relative flex w-full min-w-0 flex-col">
+                  <div className="group relative flex w-full min-w-0 flex-col bg-gray-100 py-3 px-2 rounded-xl">
                      <div className="flex-col gap-1 md:gap-3">
-                        <div className="flex grow flex-col max-w-full min-h-[20px] flex-col items-start whitespace-pre-wrap break-words overflow-x-auto gap-2"
+                        <div className="flex grow flex-col max-w-full min-h-[20px] items-start whitespace-pre-wrap break-words overflow-x-auto gap-2"
                            style={{ overflowWrap: 'anywhere' }}>
                            <div className="w-full flex flex-col">
                               <div className="grow ps-2">
-                                 {message.content}
+                                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeHightlight]}>
+                                    {message.content}
+                                 </ReactMarkdown>
                               </div>
                               <div className="md:mr-2 ml-1 md:ml-0 flex flex-col md:flex-row gap-4 md:gap-1 items-center md:items-start justify-end md:justify-start">
                                  {messagedCopied ? (
-                                    <div className="absolute -bottom-8 flex h-9 w-9 justify-center items-center">
+                                    <div className="absolute -bottom-8 flex justify-center items-centert text-sm">
                                        <TbCheck
                                           size={20}
                                           className="text-black dark:text-neutral-300"
-                                       />
+                                       /> Đã sao chép
                                     </div>
                                  ) : (
                                     <div className="absolute -bottom-8 hidden group-hover:block">

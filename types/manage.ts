@@ -1,19 +1,10 @@
-import { number } from "zod"
-
-export type DepartmentNode = {
-   _id: string,
-   name: string,
-   description: string,
-   parentDepartmentId: string,
-   children: DepartmentNode[],
-   expand: boolean,
-}
-
 export type UserItem = {
    id: number,
    fullName: string,
    email: string,
+   role: string,
    authorityGroup: string,
+   permissionDescription: string,
    isVerified: boolean,
    isDisabled: boolean,
 }
@@ -45,12 +36,13 @@ export type DocumentItem = {
    issuingBody: string | null,
    issuanceDate: Date | null,
    effectiveDate: Date | null,
-   storagePath: string,
+   fileUrl: string,
    documentSize: number,
    validityStatus: boolean,
-   isPublic: boolean,
+   invalidDate: Date | null,
    isRegulatory: boolean,
    mimeType: string,
+   syncStatus: "NOT_SYNC" | "SYNC" | "PENDING_SYNC" | "FAILED_SYNC"
 }
 
 export type StatsData = {
@@ -58,9 +50,9 @@ export type StatsData = {
    totalDocumentFields: number,
    totalDocumentTypes: number,
    totalIssuingBodies: number,
-   totalPublic: number,
    totalValid: number,
    totalRegulatory: number,
+   totalSync: number,
    documentTypes: DocumentTypeStats[],
    documentFields: DocumentFieldStats[],
    issuingBodies: IssuingBodyStats[],
@@ -71,9 +63,9 @@ export const StatsDataInit: StatsData = {
    totalDocumentFields: 0,
    totalDocumentTypes: 0,
    totalIssuingBodies: 0,
-   totalPublic: 0,
    totalValid: 0,
    totalRegulatory: 0,
+   totalSync: 0,
    documentTypes: [],
    documentFields: [],
    issuingBodies: [],

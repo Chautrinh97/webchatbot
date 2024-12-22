@@ -19,19 +19,19 @@ export const GeneralStatsComponent = (
       <div className="w-full grid grid-cols-4 gap-4 text-medium">
          <Card className="hover:bg-neutral-200 dark:hover:bg-neutral-800">
             <CardBody>
-               <div className="relative py-2 pl-10 pr-2"><HiOutlineDocumentDuplicate className="absolute left-0" size={24}/> Tổng số tài liệu</div>
+               <div className="relative py-2 pl-10 pr-2"><HiOutlineDocumentDuplicate className="absolute left-0" size={24}/> Tổng số văn bản</div>
                <span className="py-2 pl-10 pr-2 text-3xl font-bold">{totalDocuments}</span>
             </CardBody>
          </Card>
          <Card className="hover:bg-neutral-200 dark:hover:bg-neutral-800">
             <CardBody>
-               <div className="relative py-2 pl-10 pr-2"><FaBriefcase className="absolute left-0" size={24} /> Tổng số lĩnh vực tài liệu</div>
+               <div className="relative py-2 pl-10 pr-2"><FaBriefcase className="absolute left-0" size={24} /> Tổng số lĩnh vực văn bản</div>
                <span className="py-2 pl-10 pr-2 text-3xl font-bold">{totalDocumentFields}</span>
             </CardBody>
          </Card>
          <Card className="hover:bg-neutral-200 dark:hover:bg-neutral-800">
             <CardBody>
-               <div className="relative py-2 pl-10 pr-2"><FaClipboard className="absolute left-0" size={24}/>Tổng số loại tài liệu</div>
+               <div className="relative py-2 pl-10 pr-2"><FaClipboard className="absolute left-0" size={24}/>Tổng số loại văn bản</div>
                <span className="py-2 pl-10 pr-2 text-3xl font-bold">{totalDocumentTypes}</span>
             </CardBody>
          </Card>

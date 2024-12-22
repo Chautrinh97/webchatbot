@@ -1,65 +1,63 @@
-import axiosInstance from "@/app/apiService/axios";
 import { AddUserModal } from "@/components/Manage/User/AddUserModal";
 import { PageLimitComponent } from "@/components/Manage/PageLimitComponent";
 import { PaginationComponent } from "@/components/Manage/PaginationComponent";
 import { SearchBarComponent } from "@/components/Manage/SearchBarComponent";
 import { UserComponent } from "@/components/Manage/User/UserComponent";
 import { UserItem } from "@/types/manage";
-import { getAuthorityGroup, UserRoleConstant } from "@/utils/constant";
+import { UserPermissionConstant } from "@/utils/constant";
 import { validateSearchParams } from "@/utils/string";
 import { StatusCodes } from "http-status-codes";
 import { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import queryString from "query-string";
 import { Suspense } from "react";
 import { Loading } from "@/components/Others/Loading";
+import { apiService } from "@/app/apiService/apiService";
+import { getAccessToken } from "@/app/apiService/cookies";
+import { getPermissions } from "@/utils/access-utils";
 
 export const metadata: Metadata = {
    title: 'Người dùng',
 }
 
-const fetchData = async (searchKey: string, pageLimit: number, pageNumber: number) => {
-   const cookieStore = cookies();
-   const accessToken = cookieStore.get("accessToken")?.value;
-   const params = queryString.stringify({ searchKey, pageNumber, pageLimit });
-   const response = await axiosInstance.get(`/user?${params}`,
-      {
-         headers: {
-            Authorization: `Bearer ${accessToken}`,
-         },
-         withCredentials: true
-      }
-   );
-   return response;
-}
-export default async function UserPage({ searchParams }: { searchParams: any }) {
-   const role = cookies().get('role')?.value || UserRoleConstant.OFFICER;
-   if (role !== UserRoleConstant.SUPERADMIN) {
+export default async function UserPage(props: { searchParams: Promise<any> }) {
+   const permissions = await getPermissions();
+   if (!permissions?.some((perm: string) => perm === UserPermissionConstant.MANAGE_USERS)) {
       redirect('/manage/document');
    }
+   const searchParams = await props.searchParams;
 
    const { searchKey = '' } = searchParams;
    const { pageLimit, pageNumber } = validateSearchParams(searchParams);
 
    try {
-      const response = await fetchData(searchKey, pageLimit, pageNumber);
+      const token = await getAccessToken();
+      const response = await apiService.get(`/user`, {
+         searchKey, pageLimit, pageNumber,
+      }, {
+         Authorization: `Bearer ${token}`,
+      });
       if (response.status !== StatusCodes.OK) {
          return (
             <div className="flex flex-col items-center justify-center mt-24 gap-3">
-               <span>Có lỗi phía server. Vui lòng thử lại sau.</span>
+               <span>Có lỗi phía server. Vui lòng thử lại sau</span>
             </div>
          )
       }
-      const users: UserItem[] = response.data.data.map((user: any) => ({
+
+      const usersData = await response.json();
+      const users: UserItem[] = usersData.data.map((user: any) => ({
          id: user.id,
          fullName: user.fullName,
          email: user.email,
-         authorityGroup: getAuthorityGroup(user.role, user.authorityGroup),
+         role: user.role,
+         authorityGroup: user.authorityGroup?.name,
+         permissionDescription: user.authorityGroup?.description,
          isVerified: user.isVerified,
          isDisabled: user.isDisabled,
       }));
-      const total = response.data.total;
+      const total = usersData.total;
+
       return (
          <Suspense fallback={<Loading />}>
             <div className="h-full w-full">
@@ -87,7 +85,7 @@ export default async function UserPage({ searchParams }: { searchParams: any }) 
    } catch {
       return (
          <div className="flex flex-col items-center justify-center mt-24 gap-3">
-            <span>Có lỗi phía server. Vui lòng thử lại sau.</span>
+            <span>Có lỗi phía server. Vui lòng thử lại sau</span>
          </div>
       )
    }

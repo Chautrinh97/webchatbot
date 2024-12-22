@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import {
-  Montserrat,
+  Inter,
 } from "next/font/google";
 import "./global.css";
-import { ThemeProvider } from "next-themes";
 import ToastProvider from "./providers/ToastProvider";
 import { NextUI } from "./providers/NextUIProvider";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
-const inter = Montserrat({
+const inter = Inter({
   subsets: ["vietnamese"],
   weight: "500",
   display: "swap"
@@ -31,17 +31,17 @@ export default function RootLayout({
           content="height=device-height, width=device-width, initial-scale=1" />
         <link
           rel="icon"
-          href="/icon.jpg"
+          href="/icon_20.jpg"
           sizes='any'>
         </link>
       </head>
       <body className={inter.className} suppressHydrationWarning={true}>
         <ToastProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
             <NextUI>
               {children}
             </NextUI>
-          </ThemeProvider>
+          </ThemeProvider>  
         </ToastProvider>
       </body>
     </html>

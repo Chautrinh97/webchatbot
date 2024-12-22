@@ -1,7 +1,6 @@
 'use client';
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
-import { errorToast, successToast, warnToast } from "@/utils/toast";
+import { errorToast, successToast } from "@/utils/toast";
 import { TiDocumentDelete } from "react-icons/ti";
 import {
    Button,
@@ -12,9 +11,12 @@ import {
    ModalFooter,
    useDisclosure,
    Divider,
+   Tooltip,
 } from "@nextui-org/react";
 import { TbTrash } from "react-icons/tb";
 import { useRouter } from "next/navigation";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { ST } from "next/dist/shared/lib/utils";
 
 export const DeleteDocumentModal = ({ id }: { id: number }) => {
    const router = useRouter();
@@ -22,21 +24,19 @@ export const DeleteDocumentModal = ({ id }: { id: number }) => {
 
    const handleDelete = async () => {
       try {
-         const response = await axiosInstance.delete(`/document/${id}`, {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.delete(`/document/${id}`);
          if (response.status === StatusCodes.NOT_FOUND) {
-            errorToast(`Không tìm thấy tài liệu này, đang làm mới...`);
-            onClose();
-            router.refresh();
-            return;
+            errorToast(`Văn bản không tòn tại. Đang làm mới...`);
+         } else if (response.status === StatusCodes.CONFLICT) {
+            errorToast('Văn bản đang được xử lý trong một tiến trình khác. Vui lòng thử lại sau');
+         } else {
+            successToast('Xóa thành công');
          }
-         successToast('Xóa thành công.');
          onClose();
          router.refresh();
          return;
       } catch {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          onClose();
          return;
       }
@@ -44,23 +44,28 @@ export const DeleteDocumentModal = ({ id }: { id: number }) => {
 
    return (
       <>
-         <button
-            type="button"
-            onClick={onOpen}
-            title="Xóa"
-            className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-red-600 hover:text-red-800 disabled:opacity-50 disabled:pointer-events-none dark:text-red-500 dark:hover:text-red-400">
-            <TbTrash size={20} />
-         </button>
+         <Tooltip content='Xóa' placement={'left'} color={'danger'}>
+            <button
+               type="button"
+               onClick={onOpen}
+               className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent 
+            text-red-600 hover:text-red-800 disabled:opacity-50 disabled:pointer-events-none 
+            dark:text-red-500 dark:hover:text-red-400 hover:animate-bounceupdown">
+               <TbTrash size={20} />
+            </button>
+         </Tooltip>
          <Modal
+            backdrop="blur"
             size="lg"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
                   <>
                      <ModalHeader className="flex items-center gap-1 bg-red-600 text-white">
-                        <TiDocumentDelete size={24} /> Xóa tài liệu
+                        <TiDocumentDelete size={24} /> Xóa văn bản
                      </ModalHeader>
                      <Divider />
                      <ModalBody className="text-center">

@@ -49,7 +49,7 @@ export const PieChart = ({ total, title, data, labels }: { total: number, title:
          animateRotate: true,
          duration: 1500,
       },
-      cutout: '25%',
+      cutout: '30%',
    }
 
 
@@ -64,5 +64,5 @@ export const PieChart = ({ total, title, data, labels }: { total: number, title:
          }
       ],
    }
-   return <Pie data={chartData} options={options} />
+   return <Pie data={chartData} options={options}/>
 }

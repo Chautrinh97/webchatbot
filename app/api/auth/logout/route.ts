@@ -2,8 +2,7 @@
 import { cookies } from "next/headers";
 
 export async function POST(request: Request) {
-   cookies().delete('accessToken');
-   cookies().delete('refreshToken');
-   cookies().delete('role');
+   (await cookies()).delete('accessToken');
+   (await cookies()).delete('refreshToken');
    return Response.json({message: 'Đăng xuất thành công'},);
 }

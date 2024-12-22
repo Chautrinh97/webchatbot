@@ -1,5 +1,4 @@
 'use client';
-import axiosInstance from "@/app/apiService/axios";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, successToast } from "@/utils/toast";
 import { MdDeleteOutline } from "react-icons/md";
@@ -12,9 +11,11 @@ import {
    ModalFooter,
    useDisclosure,
    Divider,
+   Tooltip,
 } from "@nextui-org/react";
 import { TbTrash } from "react-icons/tb";
 import { useRouter } from "next/navigation";
+import { apiService, apiServiceClient } from "@/app/apiService/apiService";
 
 export const DeleteDocumentPropertiesModal = (
    { id, propertyAPIURI, propertyText }:
@@ -25,12 +26,9 @@ export const DeleteDocumentPropertiesModal = (
 
    const handleDelete = async () => {
       try {
-         const response = await axiosInstance.delete(`${propertyAPIURI}/${id}`, {
-            withCredentials: true,
-         });
+         const response = await apiServiceClient.delete(`${propertyAPIURI}/${id}`);
          if (response.status === StatusCodes.NOT_FOUND) {
-            console.log(response.data);
-            errorToast(`Không tồn tại ${propertyText} này.`);
+            errorToast(`Không tồn tại ${propertyText} này. Đang làm mới...`);
          }
          else successToast('Xóa thành công.');
          onClose();
@@ -38,24 +36,29 @@ export const DeleteDocumentPropertiesModal = (
          return;
       } catch {
          onClose();
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau.');
+         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
          return;
       }
    }
 
    return (
       <>
-         <button
-            type="button"
-            onClick={onOpen}
-            title="Xóa"
-            className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent text-red-600 hover:text-red-800 disabled:opacity-50 disabled:pointer-events-none dark:text-red-500 dark:hover:text-red-400">
-            <TbTrash size={20} />
-         </button>
+         <Tooltip content="Xóa" placement={'left'} color={'danger'}>
+            <button
+               type="button"
+               onClick={onOpen}
+               className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border border-transparent 
+            text-red-600 hover:text-red-800 disabled:opacity-50 disabled:pointer-events-none 
+            dark:text-red-500 dark:hover:text-red-400 hover:animate-bounceupdown">
+               <TbTrash size={20} />
+            </button>
+         </Tooltip>
          <Modal
+            backdrop="blur"
             size="lg"
             isOpen={isOpen}
             onClose={onClose}
+            hideCloseButton={true}
          >
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
@@ -65,7 +68,7 @@ export const DeleteDocumentPropertiesModal = (
                      </ModalHeader>
                      <Divider />
                      <ModalBody className="text-center">
-                        <p>Khi xóa, các tài liệu thuộc {propertyText} này vẫn được giữ.</p>
+                        <p>Khi xóa, các văn bản thuộc {propertyText} này vẫn được giữ.</p>
                         <p>Bạn có chắc chắn muốn xóa?</p>
                      </ModalBody>
                      <Divider />

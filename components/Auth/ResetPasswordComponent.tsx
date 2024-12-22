@@ -2,14 +2,12 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { ResetPasswordSchema } from "@/types/validation";
-import Link from "next/link";
 import { TbAlertCircle } from "react-icons/tb";
-import { GoogleIcon } from "@/app/assets/google";
 import { z } from "zod";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, promiseToast, successToast } from "@/utils/toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import axiosInstance from "@/app/apiService/axios";
+import { apiService } from "@/app/apiService/apiService";
 
 type ResetPasswordFormData = z.TypeOf<typeof ResetPasswordSchema>;
 
@@ -20,19 +18,17 @@ export const ResetPasswordComponent = () => {
       register,
       handleSubmit,
       formState: { errors },
-      setError,
    } = useForm<ResetPasswordFormData>({
       resolver: zodResolver(ResetPasswordSchema)
    });
 
    const onSubmit: SubmitHandler<ResetPasswordFormData> = async (data: ResetPasswordFormData) => {
       try {
-         const response = await promiseToast(axiosInstance.post(
-            '/auth/reset-password',
-            JSON.stringify({
-               ...data,
-               token: searchParams.get('reset-from'),
-            }),
+         const response = await promiseToast(apiService.post(
+            '/auth/reset-password', {
+            ...data,
+            token: searchParams.get('reset-from'),
+         },
          ), 'Đang xử lý...');
 
          if (response.status === StatusCodes.UNAUTHORIZED) {

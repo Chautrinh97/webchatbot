@@ -8,36 +8,32 @@ export const LoginConstantMessage = {
 export const UserRoleConstant = {
    SUPERADMIN: 'superadmin',
    OFFICER: 'officer',
+   GUEST: 'guest',
 }
 
 export const UserPermissionConstant = {
    MANAGE_DOCUMENTS: 'manage_documents',
-   MANAGE_ISSUING_BODIES: 'manage_issuing_bodies',
-   MANAGE_DOCUMENT_TYPES: 'manage_document_types',
-   MANAGE_DOCUMENT_FIELDS: 'manage_document_fields',
-   VIEW_DOCUMENT_STATISTIC: 'view_document_statistic',
-   VIEW_CHATBOT_STATISTIC: 'view_chatbot_statistic',
+   MANAGE_DOCUMENTS_PROPERTIES: 'manage_documents_properties', 
+   MANAGE_USERS: 'manage_users',
+   VIEW_STATISTIC_CHATBOT: 'view_statistic_chatbot',
 }
 
 export const PermissionsConstant = [
-   { id: 1, name: 'manage_documents', description: 'Quản lý tài liệu.' },
-   { id: 2, name: 'manage_issuing_bodies', description: 'Quản lý cơ quan ban hành.' },
-   { id: 3, name: 'manage_document_types', description: 'Quản lý loại tài liệu.' },
-   { id: 4, name: 'manage_document_fields', description: 'Quản lý tài liệu.' },
-   { id: 6, name: 'view_documents_statistic', description: 'Xem thống kê tài liệu.' },
-   { id: 7, name: 'view_chatbot_statistic', description: 'Xem thống kê truy vấn chatbot.' },
+   { id: 1, name: 'manage_documents_properties', description: 'Quản lý văn bản và các thuộc tính.' },
+   { id: 2, name: 'manage_documents', description: 'Quản lý văn bản.' },
+   { id: 3, name: 'manage_users', description: 'Quản lý người dùng.' },
+   { id: 4, name: 'view_statistic_chatbot', description: 'Xem thống kê truy vấn chatbot.' },
 ];
-
-export const getAuthorityGroup = (role: string, authorityGroup: any) => {
-   if (role === UserRoleConstant.SUPERADMIN)
-      return 'Quyền quản trị viên';
-   if (!authorityGroup)
-      return 'Không thuộc nhóm quyền nào';
-   return authorityGroup.name;
-}
 
 export const MimeType = {
    PDF: 'application/pdf',
    DOC: 'application/msword',
    DOCX: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+}
+
+export const SyncStatus = {
+   SYNC: "SYNC",
+   NOT_SYNC: "NOT_SYNC",
+   PENDING_SYNC: "PENDING_SYNC",
+   FAILED_RESYNC: "FAILED_RESYNC"
 }
