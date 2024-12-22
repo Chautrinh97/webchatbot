@@ -56,15 +56,13 @@ export default async function DocumentTypePage(props: { searchParams: Promise<an
                   </div>
                   <AddDocumentPropertiesModal
                      propertyApiURI="/document-type"
-                     propertyText="loại văn bản"
-                     propertyPermission={UserPermissionConstant.MANAGE_DOCUMENT_TYPES} />
+                     propertyText="loại văn bản"/>
                </div>
                <div className="mt-3 flex flex-col relative px-6">
                   <DocumentPropertiesComponent
                      properties={properties}
                      propertyAPIURI="/document-type"
                      propertyText="loại văn bản"
-                     propertyPermission={UserPermissionConstant.MANAGE_DOCUMENT_TYPES}
                      pageNumber={pageNumber}
                      pageLimit={pageLimit} />
                   <PaginationComponent

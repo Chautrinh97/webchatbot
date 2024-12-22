@@ -56,15 +56,13 @@ export default async function IssuingBodyPage(props: { searchParams: Promise<any
                   </div>
                   <AddDocumentPropertiesModal
                      propertyApiURI="/issuing-body"
-                     propertyText="cơ quan ban hành"
-                     propertyPermission={UserPermissionConstant.MANAGE_ISSUING_BODIES} />
+                     propertyText="cơ quan ban hành"/>
                </div>
                <div className="mt-3 flex flex-col relative px-6">
                   <DocumentPropertiesComponent
                      properties={properties}
                      propertyAPIURI="/issuing-body"
                      propertyText="cơ quan ban hành"
-                     propertyPermission={UserPermissionConstant.MANAGE_ISSUING_BODIES}
                      pageNumber={pageNumber}
                      pageLimit={pageLimit} />
                   <PaginationComponent

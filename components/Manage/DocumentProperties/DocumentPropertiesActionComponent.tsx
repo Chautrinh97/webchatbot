@@ -9,13 +9,11 @@ export const DocumentPropertiesActionComponent = (
       id,
       propertyAPIURI,
       propertyText,
-      propertyPermission
    }: {
       id: number,
       propertyAPIURI:
       string,
       propertyText: string,
-      propertyPermission: string
    }) => {
    const { user } = useUserStore();
    const hasPermission = user.permissions?.some((permission) => permission === UserPermissionConstant.MANAGE_DOCUMENTS_PROPERTIES);

@@ -8,14 +8,12 @@ export const DocumentPropertiesComponent = (
       properties,
       propertyAPIURI,
       propertyText,
-      propertyPermission,
       pageNumber,
       pageLimit,
    }: {
       properties: DocumentProperty[],
       propertyAPIURI: string,
       propertyText: string,
-      propertyPermission: string,
       pageNumber: number,
       pageLimit: number
    }
@@ -50,8 +48,7 @@ export const DocumentPropertiesComponent = (
                                           key={property.id}
                                           id={property.id}
                                           propertyAPIURI={propertyAPIURI}
-                                          propertyText={propertyText}
-                                          propertyPermission={propertyPermission} />
+                                          propertyText={propertyText} />
                                     </div>
                                  </td>
                               </tr>

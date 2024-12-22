@@ -25,8 +25,8 @@ import { apiService, apiServiceClient } from "@/app/apiService/apiService";
 
 type AddDocumentPropertiesForm = z.TypeOf<typeof DocumentPropertiesSchema>;
 export const AddDocumentPropertiesModal = (
-   { propertyText, propertyApiURI, propertyPermission }:
-      { propertyText: string, propertyApiURI: string, propertyPermission: string }) => {
+   { propertyText, propertyApiURI }:
+      { propertyText: string, propertyApiURI: string }) => {
    const router = useRouter();
    const [action, setAction] = useState<"close" | "continue" | null>(null);
    const { isOpen, onOpen, onClose } = useDisclosure();

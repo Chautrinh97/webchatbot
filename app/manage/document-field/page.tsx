@@ -55,15 +55,13 @@ export default async function DocumentFieldPage(props: { searchParams: Promise<a
                   </div>
                   <AddDocumentPropertiesModal
                      propertyApiURI="/document-field"
-                     propertyText="lĩnh vực"
-                     propertyPermission={UserPermissionConstant.MANAGE_DOCUMENT_FIELDS} />
+                     propertyText="lĩnh vực" />
                </div>
                <div className="mt-3 flex flex-col relative px-6">
                   <DocumentPropertiesComponent
                      properties={properties}
                      propertyAPIURI="/document-field"
                      propertyText="lĩnh vực"
-                     propertyPermission={UserPermissionConstant.MANAGE_DOCUMENT_FIELDS}
                      pageNumber={pageNumber}
                      pageLimit={pageLimit} />
                   <PaginationComponent
