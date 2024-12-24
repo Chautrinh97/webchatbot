@@ -8,7 +8,7 @@ type RequestOptions = {
 };
 
 export const apiService = {
-   baseURL: process.env.API_ENDPOINT || '',
+   baseURL: 'http://localhost:9000',
    buildQueryParamsWithQueryString(params: Record<string, any>): string {
       const query = queryString.stringify(params);
       return query ? `?${query}` : '';

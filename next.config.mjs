@@ -4,6 +4,7 @@ dotenv.config();
 const nextConfig = {
    env: {
       API_ENDPOINT: process.env.API_ENDPOINT,
+      CHATBOT_ENDPOINT: process.env.CHATBOT_ENDPOINT,
    }
 };
 

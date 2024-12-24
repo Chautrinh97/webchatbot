@@ -151,7 +151,7 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
                errorToast('Biểu mẫu chứa dữ liệu không tồn tại. Đang tải lại...')
             }
          } else if (response.status === StatusCodes.CONFLICT) {
-            errorToast('Văn bản đang được xử lý trong một tiến trình khác. Vui lòng thử lại sau');
+            errorToast('Văn bản đang trong tiến trình khác. Vui lòng thử lại sau');
          } else {
             const message = (await response.json()).message;
             if (message === 'UPDATING_DOCUMENT')

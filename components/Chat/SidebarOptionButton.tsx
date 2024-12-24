@@ -8,12 +8,10 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
 import { TbUserEdit, TbUserCircle, TbChevronUp, TbLogin } from "react-icons/tb"
 import { ManageAccountModal } from "../Auth/ManageAccountModal";
-import { StatusCodes } from "http-status-codes";
-import {apiService} from "@/app/apiService/apiService";
 
 export const SidebarOptionButton: React.FC = () => {
    const router = useRouter();
-   const { user, isLoggedIn, setUser } = useUserStore();
+   const { user, isLoggedIn } = useUserStore();
    const [openOption, setOpenOption] = useState<boolean>(false);
    const accountModal = useDisclosure();
 
@@ -24,37 +22,17 @@ export const SidebarOptionButton: React.FC = () => {
          });
       } catch {
          errorToast('Có lỗi trong quá trình đăng xuất. Vui lòng thử lại sau');
+         return;
       }
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       successToast('Đăng xuất thành công.');
       router.push('/');
       return;
    }
 
-   const fetchUser = async () => {
-      try {
-         const response = await apiService.get('/user/me');
-         if (response.status === StatusCodes.NOT_FOUND) {
-            errorToast(`Không tồn tại người dùng này. Đang đăng xuất...`);
-            await fetch('/api/auth/logout', {
-               method: "POST",
-            });
-            router.push('/');
-            return;
-         } else if (response.status !== StatusCodes.OK) {
-            errorToast('Có lỗi xảy ra. Vui lòng thử lại sau');
-            return;
-         }
-         const result = await response.json();
-         setUser(result.user);
-      } catch (error) {
-         errorToast('Có lỗi xảy ra. Vui lòng thử lại sau')
-         return;
-      }
-   }
-
    const handleOpenModal = () => {
       try {
-         fetchUser();
          accountModal.onOpen();
       } catch {
          errorToast('Có lỗi khi tải dữ liệu. Vui lòng thử lại sau');
@@ -69,7 +47,7 @@ export const SidebarOptionButton: React.FC = () => {
    return (
       <>
          <div className="relative inline-flex w-full">
-            <Dropdown className="w-64">
+            <Dropdown className="w-64 dark:bg-neutral-800">
                <DropdownTrigger>
                   <button
                      type="button"
@@ -80,35 +58,30 @@ export const SidebarOptionButton: React.FC = () => {
                      <TbChevronUp size={22} className={`${openOption ? 'rotate-180' : ''}`} />
                   </button>
                </DropdownTrigger>
-               {isLoggedIn ?
-                  <>
-                     <DropdownMenu
-                        aria-label="Option Actions"
-                        disabledKeys={["email"]}
-                     >
-                        <DropdownItem key="email" className="text-center">
-                           {user.fullName}
-                        </DropdownItem>
-                        <DropdownItem key="document_manage" href='/manage/document' startContent={<HiOutlineBuildingOffice2 size={20} />}>
-                           Trang quản lý văn bản
-                        </DropdownItem>
-                        <DropdownItem key="account_manage" startContent={<TbUserEdit size={20} />} onPress={handleOpenModal}>
-                           Quản lý tài khoản
-                        </DropdownItem>
-                        <DropdownItem key="log_out" startContent={<FaSignOutAlt size={20} />} onPress={handleLogout}>
-                           Đăng xuất
-                        </DropdownItem>
-                     </DropdownMenu>
-                  </> : (
-                     <DropdownMenu aria-label="Static Actions">
-                        <DropdownItem key="document_manage" href='/manage/' startContent={<HiOutlineBuildingOffice2 size={20} />}>
-                           Trang quản lý văn bản
-                        </DropdownItem>
-                        <DropdownItem key="log_in" href='/auth/login/' startContent={<TbLogin size={20} />}>
-                           Đăng nhập
-                        </DropdownItem>
-                     </DropdownMenu>
-                  )}
+               <DropdownMenu
+                  aria-label="Option Actions"
+                  disabledKeys={["email"]}>
+                  <DropdownItem key="email"
+                     className="text-center border-b border-gray-300 dark:border-neutral-500 rounded-none">
+                     {user.fullName}
+                  </DropdownItem>
+                  <DropdownItem
+                     className="py-2 my-1 hover:bg-gray-200 dark:hover:bg-neutral-700"
+                     key="document_manage" href='/manage/document' startContent={<HiOutlineBuildingOffice2 size={20} />}>
+                     Trang quản lý văn bản
+                  </DropdownItem>
+                  <DropdownItem
+                     className="py-2 my-1 hover:bg-gray-200 dark:hover:bg-neutral-700"
+                     key="account_manage" startContent={<TbUserEdit size={20} />} onPress={handleOpenModal}>
+                     Quản lý tài khoản
+                  </DropdownItem>
+                  <DropdownItem
+                     className="py-2 my-1 hover:bg-gray-200 dark:hover:bg-neutral-700"
+                     key="log_out" startContent={<FaSignOutAlt size={20} />} onPress={handleLogout}>
+                     Đăng xuất
+                  </DropdownItem>
+               </DropdownMenu>
+
             </Dropdown>
             <ManageAccountModal disClosure={accountModal} user={user} />
          </div>

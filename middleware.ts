@@ -68,6 +68,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-   matcher: ['/chat', '/manage', '/manage/(.*)', '/api/((?!auth|auth/logout).*)',
+   matcher: ['/chat','/chat/(.*)', '/manage', '/manage/(.*)', '/api/((?!auth|auth/logout).*)',
       '/auth/confirm-email', '/auth/login', '/auth/complete-confirm', '/auth/reset-password']
 }

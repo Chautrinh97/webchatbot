@@ -1,9 +1,6 @@
 import { DocumentItem } from "@/types/manage";
-import { Checkbox } from '@nextui-org/react';
-import { AttachFileButton } from "./AttachFileButton";
 import { DocumentActionComponent } from "./DocumentActionComponent";
 import { getSyncStatus } from "@/utils/string";
-import { SyncActionButton } from "./SyncActionButton";
 
 export const DocumentTable = ({ documents }: { documents: DocumentItem[] }) => {
    return (
@@ -54,11 +51,11 @@ export const DocumentTable = ({ documents }: { documents: DocumentItem[] }) => {
                                     {getSyncStatus(document.syncStatus)}
                                  </td>
                                  <td className="px-2 py-2 my-2 text-center">
-                                    <div className="flex flex-col justify-between gap-4 items-center">
-                                       <AttachFileButton mimeType={document.mimeType} id={document.id} />
-                                       <DocumentActionComponent key={document.id} id={document.id} />
-                                       <SyncActionButton syncStatus={document.syncStatus} id={document.id} />
-                                    </div>
+                                    <DocumentActionComponent
+                                       key={document.id}
+                                       id={document.id}
+                                       mimeType={document.mimeType}
+                                       syncStatus={document.syncStatus} />
                                  </td>
                               </tr>
                            ))}

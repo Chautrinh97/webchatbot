@@ -6,9 +6,16 @@ export type Message = {
 export type Role = 'assistant' | 'user';
 
 export type Conversation = {
-  id: string;
+  id: number;
   title: string;
+  slug: string;
   messages: Message[];
+}
+
+export type ConversationItem = {
+  id: number;
+  title: string;
+  slug: string;
 }
 
 export type ChatBody = {

@@ -31,7 +31,7 @@ export default function RootLayout({
           content="height=device-height, width=device-width, initial-scale=1" />
         <link
           rel="icon"
-          href="/icon_20.jpg"
+          href="/icon.jpg"
           sizes='any'>
         </link>
       </head>

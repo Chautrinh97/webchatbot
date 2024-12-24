@@ -1,13 +1,12 @@
-import { Conversation, Message } from "@/types/chat";
+import { Conversation, ConversationItem, Message } from "@/types/chat";
 export type AppState = {
    isLoading: boolean;
    isSidebarOpen: boolean;
+   conversations: ConversationItem[];
    messageIsStreaming: boolean;
-   conversations: Conversation[];
    selectedConversation: Conversation;
    currentMessage: Message | undefined;
    messageError: boolean;
-   searchTerm: string;
 }
 export const appInitState: AppState = {
    isLoading: false,
@@ -15,11 +14,11 @@ export const appInitState: AppState = {
    messageIsStreaming: false,
    conversations: [],
    selectedConversation: {
-      id: "",
+      id: 0,
+      title: "",
+      slug: '',
       messages: [],
-      title: ""
    },
    currentMessage: undefined,
    messageError: false,
-   searchTerm: "",
 };

@@ -9,7 +9,7 @@ import { StatusCodes } from "http-status-codes";
 import { useRef, useState } from "react";
 import { EmailIcon } from "@/app/assets/email";
 import { ForgotPasswordSchema } from "@/types/validation";
-import {apiService} from "@/app/apiService/apiService";
+import { apiService } from "@/app/apiService/apiService";
 
 type ForgotPasswordForm = z.TypeOf<typeof ForgotPasswordSchema>;
 export const ForgotPasswordComponent = () => {
@@ -47,7 +47,7 @@ export const ForgotPasswordComponent = () => {
       }
    }
 
-   const  handleResend = () => {
+   const handleResend = () => {
       handleSubmit(onSubmit)();
    }
 
@@ -80,7 +80,7 @@ export const ForgotPasswordComponent = () => {
                   <div className="relative mt-2 text-[13px] text-center text-neutral-800">
                      <span>Quay lại <Link href='/auth/login' className="text-blue-500 hover:text-blue-700">đăng nhập</Link></span>
                   </div>
-                  <div className="relative w-80 mt-8 flex items-center justify-center">
+                  {/* <div className="relative w-80 mt-8 flex items-center justify-center">
                      <div className="flex-grow border-t border-neutral-300"></div>
                      <span className="mx-2 text-neutral-500">Hoặc</span>
                      <div className="flex-grow border-t border-neutral-300"></div>
@@ -90,7 +90,7 @@ export const ForgotPasswordComponent = () => {
                         <TbMessageChatbot size={24} className="absolute left-4" />
                         <span className="w-full text-center">Chuyển đến chatbot</span>
                      </Link>
-                  </div>
+                  </div> */}
                </form>
             </div>
          </div>

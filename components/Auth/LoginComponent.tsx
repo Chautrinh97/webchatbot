@@ -10,7 +10,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { errorToast, successToast } from "@/utils/toast";
 import { useAppStore } from "@/app/store/app.store";
 import { LoginConstantMessage } from "@/utils/constant";
-import { TbMessageChatbot } from "react-icons/tb";
 import {apiService} from "@/app/apiService/apiService";
 
 type LoginFormData = z.TypeOf<typeof LoginFormSchema>;
@@ -83,6 +82,9 @@ export const LoginComponent = () => {
             <div className="w-80 font-bold uppercase text-xl text-center pb-6 text-neutral-800">
                <span>Chào mừng trở lại</span>
             </div>
+            <div className="w-80 font-bold uppercase text-xl text-center pb-6 text-neutral-800">
+               <span>Bạn cần đăng nhập</span>
+            </div>
             <div className=" flex flex-col items-center w-80 px-10 rounded-sm">
                <form onSubmit={handleSubmit(onSubmit)}>
                   <div className="relative">
@@ -115,7 +117,7 @@ export const LoginComponent = () => {
                   <div className="my-3">
                      <button type="submit" className="w-80 h-12 transition-colors ease-out duration 200 text-md text-white bg-blue-500 rounded-md hover:bg-blue-600">Tiếp tục</button>
                   </div>
-                  <div className="relative w-80 mt-8 flex items-center justify-center">
+                  {/* <div className="relative w-80 mt-8 flex items-center justify-center">
                      <div className="flex-grow border-t border-neutral-300"></div>
                      <span className="mx-2 text-neutral-500">Hoặc</span>
                      <div className="flex-grow border-t border-neutral-300"></div>
@@ -125,7 +127,7 @@ export const LoginComponent = () => {
                         <TbMessageChatbot size={24} className="absolute left-4" />
                         <span className="w-full text-center">Chuyển đến chatbot</span>
                      </Link>
-                  </div>
+                  </div> */}
                </form>
             </div>
          </div>

@@ -115,7 +115,7 @@ export const ChatInput = ({
                </button>
             )}
 
-            <div className="relative mx-2 flex w-full grow flex-col rounded-[25px] border border-black/10 bg-white dark:border-gray-900/50 dark:bg-[#2F2F2F] dark:text-white sm:mx-4 shadow-md dark:border-gray-900/50">
+            <div className="relative mx-2 flex w-full grow flex-col rounded-[25px] border border-black/10 bg-white dark:border-gray-900/50 dark:bg-[#2F2F2F] dark:text-white sm:mx-4 shadow-md">
                <div
                   className="absolute left-2 top-2 rounded-sm p-1 text-neutral-800 opacity-60 dark:bg-opacity-50 dark:text-neutral-100 dark:hover:text-neutral-200"
                >

@@ -33,6 +33,8 @@ export const ManageNavbar = ({ user }: { user: any }) => {
          errorToast('Có lỗi xảy ra trong quá trình đăng xuất');
          return;
       }
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
       await fetch('/api/auth/logout', {
          method: "POST",
       });

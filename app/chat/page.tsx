@@ -1,7 +1,7 @@
-import ChatArea from "@/components/Chat/ChatArea";
+import { EmptyChatArea } from "@/components/Chat/EmptyChatArea";
 const NewConversation = async ({ }) => {
   return (
-    <ChatArea/>
+    <EmptyChatArea/>
   );
 }
 export default NewConversation;

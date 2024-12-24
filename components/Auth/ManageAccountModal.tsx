@@ -77,7 +77,6 @@ export const ManageAccountModal = ({ disClosure, user }: { disClosure: UseDisclo
                         <ModalHeader className="flex items-center bg-blue-600 text-white gap-2">
                            <FaInfoCircle size={24} /> Thông tin cá nhân
                         </ModalHeader>
-                        <Divider />
                         <ModalBody>
                            <div className="flex flex-col divide-y-2">
                               <div className="grid sm:grid-cols-5 gap-2 sm:gap-6 mt-2 mb-3">

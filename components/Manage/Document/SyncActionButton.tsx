@@ -17,13 +17,16 @@ import {
 } from "@nextui-org/react";
 import { StatusCodes } from "http-status-codes";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { VscSync, VscSyncIgnored } from "react-icons/vsc";
 
 export const SyncActionButton = ({ id, syncStatus }: { id: number, syncStatus: string }) => {
    const router = useRouter();
    const { user } = useUserStore();
    const { isOpen, onClose, onOpen } = useDisclosure();
-   const handleOpenModal = () => {
+   const [action, setAction] = useState<string>("");
+   const handleOpenModal = (action: string) => {
+      setAction(action);
       onOpen();
    }
    const handleUnsync = async () => {
@@ -31,6 +34,15 @@ export const SyncActionButton = ({ id, syncStatus }: { id: number, syncStatus: s
          const response = await apiServiceClient.post(`/document/unsync/${id}`);
          if (response.status === StatusCodes.NOT_FOUND) {
             errorToast('Văn bản không tồn tại. Đang làm mới...');
+            onClose();
+            router.refresh();
+            return;
+         } else if (response.status === StatusCodes.CONFLICT) {
+            errorToast('Văn bản đang trong tiến trình khác. Vui lòng đợi');
+            onClose();
+            return;
+         } else if (response.status === StatusCodes.FORBIDDEN) {
+            errorToast('Văn bản đã được hủy đồng bộ trước đây. Đang làm mới...');
             onClose();
             router.refresh();
             return;
@@ -59,7 +71,7 @@ export const SyncActionButton = ({ id, syncStatus }: { id: number, syncStatus: s
             router.refresh();
             return;
          } else if (response.status === StatusCodes.CONFLICT) {
-            errorToast('Văn bản đang trong tiến trình xử lý khác. Vui lòng đợi');
+            errorToast('Văn bản đang trong tiến trình khác. Vui lòng đợi');
             onClose();
             router.refresh();
             return;
@@ -85,17 +97,17 @@ export const SyncActionButton = ({ id, syncStatus }: { id: number, syncStatus: s
             {syncStatus === SyncStatus.NOT_SYNC &&
                <Tooltip content='Đồng bộ' showArrow={true} placement={"left"}>
                   <button
-                     onClick={handleOpenModal}
+                     onClick={() => handleOpenModal('sync')}
                      className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border 
-                  border-transparent text-green-400 hover:text-green-700 disabled:opacity-50 disabled:pointer-events-none 
-                  dark:text-green-700 dark:hover:text-green-500 hover:animate-bounceupdown">
+                     border-transparent text-green-400 hover:text-green-700 disabled:opacity-50 disabled:pointer-events-none 
+                     dark:text-green-700 dark:hover:text-green-500 hover:animate-bounceupdown">
                      <VscSync size={20} />
                   </button>
                </Tooltip>
             }
             {syncStatus === SyncStatus.PENDING_SYNC &&
                <button
-                  onClick={handleOpenModal}
+                  onClick={() => handleOpenModal('sync')}
                   disabled
                   className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border 
             border-transparent text-green-300 disabled:opacity-50 disabled:pointer-events-none 
@@ -104,26 +116,48 @@ export const SyncActionButton = ({ id, syncStatus }: { id: number, syncStatus: s
                </button>
             }
             {syncStatus === SyncStatus.FAILED_RESYNC &&
-               <Tooltip content='Đồng bộ lại' showArrow={true} placement={"left"}>
-                  <button
-                     onClick={handleOpenModal}
-                     className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border 
-                  border-transparent text-green-300 hover:text-green-600 disabled:opacity-50 disabled:pointer-events-none 
-                  dark:text-green-700 dark:hover:text-green-500 hover:animate-bounceupdown">
-                     <VscSync size={20} />
-                  </button>
-               </Tooltip>
-            }
-            {syncStatus === SyncStatus.SYNC &&
-               <Tooltip content='Hủy đồng bộ' showArrow={true} placement={"left"} color={"danger"}>
-                  <button
-                     onClick={handleOpenModal}
-                     className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg 
+               <>
+                  <Tooltip content='Đồng bộ lại' showArrow={true} placement={"left"}>
+                     <button
+                        onClick={() => handleOpenModal('resync')}
+                        className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border 
+                     border-transparent text-green-300 hover:text-green-600 disabled:opacity-50 disabled:pointer-events-none 
+                     dark:text-green-700 dark:hover:text-green-500 hover:animate-bounceupdown">
+                        <VscSync size={20} />
+                     </button>
+                  </Tooltip>
+                  <Tooltip content='Hủy đồng bộ' showArrow={true} placement={"left"} color={"danger"}>
+                     <button
+                        onClick={() => handleOpenModal('unsync')}
+                        className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg 
                   border border-transparent text-red-400 hover:text-red-600 disabled:opacity-50 disabled:pointer-events-none 
                   dark:text-red-700 dark:hover:text-red-500 hover:animate-bounceupdown">
-                     <VscSyncIgnored size={20} />
-                  </button>
-               </Tooltip>
+                        <VscSyncIgnored size={20} />
+                     </button>
+                  </Tooltip>
+               </>
+            }
+            {syncStatus === SyncStatus.SYNC &&
+               <>
+                  <Tooltip content='Hủy đồng bộ' showArrow={true} placement={"left"} color={"danger"}>
+                     <button
+                        onClick={() => handleOpenModal('unsync')}
+                        className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg 
+                     border border-transparent text-red-400 hover:text-red-600 disabled:opacity-50 disabled:pointer-events-none 
+                     dark:text-red-700 dark:hover:text-red-500 hover:animate-bounceupdown">
+                        <VscSyncIgnored size={20} />
+                     </button>
+                  </Tooltip>
+                  <Tooltip content='Đồng bộ lại' showArrow={true} placement={"left"}>
+                     <button
+                        onClick={() => handleOpenModal('resync')}
+                        className="inline-flex items-center gap-x-2 text-sm font-semibold rounded-lg border 
+                     border-transparent text-green-300 hover:text-green-600 disabled:opacity-50 disabled:pointer-events-none 
+                     dark:text-green-700 dark:hover:text-green-500 hover:animate-bounceupdown">
+                        <VscSync size={20} />
+                     </button>
+                  </Tooltip>
+               </>
             }
             <Modal
                backdrop="blur"
@@ -135,26 +169,29 @@ export const SyncActionButton = ({ id, syncStatus }: { id: number, syncStatus: s
                <ModalContent className="bg-white dark:bg-neutral-800">
                   {(onClose) => (
                      <>
-                        <ModalHeader className={`flex items-center gap-1 
-                           ${(syncStatus === SyncStatus.NOT_SYNC || syncStatus === SyncStatus.FAILED_RESYNC) ? "bg-green-600" : "bg-red-600"} text-white`}>
-                           {(syncStatus === SyncStatus.NOT_SYNC || syncStatus === SyncStatus.FAILED_RESYNC) ? (
+                        <ModalHeader
+                           className={`flex items-center gap-1 ${action !== 'unsync' ? "bg-green-600" : "bg-red-600"} text-white`}>
+                           {action === 'sync' ? (
                               <><VscSync size={24} /> Đồng bộ  </>
-                           ) : (
+                           ) : action === 'unsync' ? (
                               <><VscSyncIgnored size={24} /> Hủy đồng bộ </>
+                           ) : (
+                              <><><VscSync size={24} /> Đồng bộ lại </></>
                            )}
                         </ModalHeader>
                         <Divider />
                         <ModalBody className="text-center">
-                           {(syncStatus === SyncStatus.NOT_SYNC || syncStatus === SyncStatus.FAILED_RESYNC) ? (
-                              <><p>Tiến hành đồng bộ văn bản vào cơ sở dữ liệu truy vấn.</p><p>Bạn có muốn tiếp tục?</p></>
+                           {action === 'sync' ? (
+                              <><p>Đồng bộ văn bản vào dữ liệu truy vấn.</p><p>Bạn có muốn tiếp tục?</p></>
+                           ) : action === 'unsync' ? (
+                              <><p>Hủy đồng bộ văn bản khỏi dữ liệu truy vấn.</p><p>Bạn có muốn tiếp tục?</p></>
                            ) : (
-                              <><p>Hủy đồng bộ văn bản khỏi cơ sở dữ liệu truy vấn.</p><p>Bạn có muốn tiếp tục?</p></>
+                              <><p>Đồng bộ lại văn bản trong dữ liệu truy vấn.</p><p>Bạn có muốn tiếp tục?</p></>
                            )}
                         </ModalBody>
                         <Divider />
                         <ModalFooter>
-                           {(syncStatus === SyncStatus.NOT_SYNC || syncStatus === SyncStatus.FAILED_RESYNC) ? (
-
+                           {action !== 'unsync' ? (
                               <Button className="rounded-md text-white bg-green-600 border-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 dark:bg-green-600 dark:focus:ring-green-800"
                                  onPress={handleSync}>
                                  Tiếp tục

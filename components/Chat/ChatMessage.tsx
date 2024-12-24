@@ -16,17 +16,13 @@ import remarkGfm from 'remark-gfm';
 export interface Props {
    onSend: (message: Message) => void;
    message: Message;
-   messageIndex: number;
-   onEdit?: (editedMessage: Message) => void
 }
 
-export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onSend }) => {
-   const {
-      state: {
-         selectedConversation
-      },
-      dispatch,
-   } = useAppStore();
+export const ChatMessage: FC<Props> = memo(({ message, onSend }) => {
+   // const {
+   //    state: { selectedConversation },
+   //    dispatch,
+   // } = useAppStore();
 
    const [isEditing, setIsEditing] = useState<boolean>(false);
    const [isTyping, setIsTyping] = useState<boolean>(false);
@@ -48,20 +44,8 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onS
    };
 
    const handleEditMessage = () => {
-      if (message.content != messageContent) {
-         if (selectedConversation && onEdit) {
-            onEdit({ ...message, content: messageContent });
-         }
-      }
       setIsEditing(false);
       onSend({ role: 'user', content: messageContent.trim() });
-   };
-
-   const handlePressEnter = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-      if (e.key === 'Enter' && !isTyping && !e.shiftKey) {
-         e.preventDefault();
-         handleEditMessage();
-      }
    };
 
    const copyOnClick = () => {
@@ -95,13 +79,12 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onS
                   <div className="group relative flex w-full min-w-0 flex-col items-end rtl:items-start min-h-[20px] whitespace-pre-wrap break-words overflow-x-auto gap-2"
                      style={{ overflowWrap: 'anywhere' }}>
                      {!isEditing ? (
-                        <div className="relative max-w-[90%] rounded-3xl px-5 py-2.5 bg-[#f4f4f4] text-black dark:bg-[#2f2f2f] dark:text-white">
+                        <div className="relative max-w-[90%] rounded-3xl px-5 py-2.5 bg-gray-200 text-black dark:bg-neutral-700 dark:text-white">
                            {message.content}
                            <div className="absolute bottom-0 right-full top-0 -mr-3.5 hidden pr-5 pt-1 group-hover:block">
                               <button
-                                 className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-[#f4f4f4] dark:hover:bg-[#2f2f2f]"
-                                 onClick={toggleEditing}
-                              >
+                                 className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-neutral-700"
+                                 onClick={toggleEditing}>
                                  <TbEdit />
                               </button>
                            </div>
@@ -115,7 +98,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onS
                                     className=" m-0 resize-none border-0 bg-[#ECECEC] dark:bg-[#424242] p-0 focus:outline-none overflow-y- w-full"
                                     value={messageContent}
                                     onChange={handleInputChange}
-                                    onKeyDown={handlePressEnter}
+                                    // onKeyDown={handlePressEnter}
                                     onCompositionStart={() => setIsTyping(true)}
                                     onCompositionEnd={() => setIsTyping(false)}
                                  >
@@ -133,7 +116,8 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onS
                                     </button>
                                     <button
                                        className="h-9 w-14 rounded-full text-[14px] text-white bg-black hover:bg-neutral-700 dark:text-black dark:shadow-sm dark:bg-white dark:hover:bg-neutral-200"
-                                       onClick={handleEditMessage}>
+                                       onClick={handleEditMessage}
+                                       disabled={messageContent.trim().length <= 0}>
                                        <div className="flex w-full gap-2 items-center justify-center">
                                           Gửi
                                        </div>
@@ -158,18 +142,19 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onS
                      <div className="pt-0.5">
                         <div className="flex h-7 w-7 items-center justify-center overflow-hidden rounded-full">
                            <div className="relative p-1 rounded-sm flex items-center justify-center h-8 w-8">
-                              <TbRobotFace size={18} />
+                              <TbRobotFace size={24} />
                            </div>
                         </div>
                      </div>
                   </div>
-                  <div className="group relative flex w-full min-w-0 flex-col bg-gray-100 py-3 px-2 rounded-xl">
+                  <div className="group relative flex w-full min-w-0 flex-col py-3 px-2 rounded-xl 
+                  bg-gray-200 text-black dark:bg-neutral-700 dark:text-white">
                      <div className="flex-col gap-1 md:gap-3">
                         <div className="flex grow flex-col max-w-full min-h-[20px] items-start whitespace-pre-wrap break-words overflow-x-auto gap-2"
                            style={{ overflowWrap: 'anywhere' }}>
                            <div className="w-full flex flex-col">
-                              <div className="grow ps-2">
-                                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw, rehypeHightlight]}>
+                              <div className="grow pt-2 ps-3 ">
+                                 <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                                     {message.content}
                                  </ReactMarkdown>
                               </div>
@@ -184,7 +169,7 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onS
                                  ) : (
                                     <div className="absolute -bottom-8 hidden group-hover:block">
                                        <button
-                                          className="flex items-center justify-center mt-3 h-7 w-7 text-black dark:text-white rounded-lg hover:bg-[#f4f4f4] dark:hover:bg-[#2f2f2f]"
+                                          className="flex items-center justify-center mt-3 h-7 w-7 text-black dark:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-neutral-700"
                                           onClick={copyOnClick}
                                           title="Sao chép"
                                        >

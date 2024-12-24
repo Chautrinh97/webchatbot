@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 
 const mapUserResponse = (userData: any) => {
    return {
+      userId: userData.userId,
       fullName: userData.fullName,
       email: userData.email,
       role: userData.role,

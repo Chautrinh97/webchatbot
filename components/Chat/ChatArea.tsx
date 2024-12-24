@@ -1,31 +1,26 @@
 "use client"
 import { useAppStore } from "@/app/store/app.store";
 import { Conversation, Message } from "@/types/chat";
-import { memo, useCallback, useEffect, useRef, useState } from "react";
+import { memo, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { MemoizedChatMessage } from "./MemoizedChatMessage";
 import { ChatInput } from "./ChatInput";
 import { ChatLoader } from "./ChatLoader";
-import { updateConversation } from "@/utils/conversation";
 import { throttle } from "@/utils/throttle";
 import Image from 'next/image'
 import { errorToast } from "@/utils/toast";
 import { HttpStatusCode } from "axios";
 import icon from "../../app/icon_75.jpg"
+import { apiServiceClient } from "@/app/apiService/apiService";
+import { StatusCodes } from "http-status-codes";
+import { useRouter } from "next/navigation";
+import { Loading } from "../Others/Loading";
 
-type Props = {
-   conversationId?: string;
-}
-const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
+
+const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
    const {
-      state: {
-         isLoading,
-         selectedConversation,
-         conversations,
-      },
+      state: { isLoading, selectedConversation },
       dispatch,
    } = useAppStore();
-
-
    const [currentMessage, setCurrentMessage] = useState<Message>();
    const [autoScrollEnabled, setAutoScrollEnabled] = useState<boolean>(true);
    const [showScrollDownButton, setShowScrollDownButton] = useState<boolean>(false);
@@ -34,62 +29,138 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
    const messagesEndRef = useRef<HTMLDivElement>(null);
    const chatContainerRef = useRef<HTMLDivElement>(null);
    const textareaRef = useRef<HTMLTextAreaElement>(null);
+   const router = useRouter();
+
+   useEffect(() => {
+      const fetchMessages = async () => {
+         try {
+            const response = await apiServiceClient.get(`/conversation/${conversationSlug}`);
+            if (response.status === StatusCodes.NOT_FOUND) {
+               errorToast('Không tìm thấy đoạn hội thoại. Đang chuyển hướng...');
+               router.push('/chat');
+               return;
+            } else if (response.status === StatusCodes.FORBIDDEN) {
+               errorToast('Không phải đoạn hội thoại của bạn. Đang chuyển hướng...');
+               router.push('/chat');
+               return;
+            }
+            const result = await response.json();
+            dispatch('selectedConversation', result);
+         } catch {
+            return (
+               <div className="flex flex-col items-center justify-center mt-24 gap-3">
+                  <span>Có lỗi phía server. Vui lòng thử lại sau</span>
+               </div>
+            );
+         }
+      }
+      fetchMessages();
+   }, []);
 
    const handleSend = useCallback(
-      async (message: Message, deleteCount = 0) => {
-         if (!selectedConversation) return;
+      async (message: Message) => {
+         const webSocket = new WebSocket(`${process.env.CHATBOT_ENDPOINT}/chat`);
          let updatedConversation: Conversation;
-         if (deleteCount) {
-            const updatedMessages = [...selectedConversation.messages];
-            for (let i = 0; i < deleteCount; i++) {
-               updatedMessages.pop();
-            }
-            updatedConversation = {
-               ...selectedConversation,
-               messages: [...updatedMessages, message],
-            };
-         } else {
+
+         if (!selectedConversation) return;
+
+         webSocket.onopen = () => {
+            let first = true;
+            let chunks = '';
+
+            dispatch("isLoading", true);
+            dispatch("messageIsStreaming", true);
+
             updatedConversation = {
                ...selectedConversation,
                messages: [...selectedConversation.messages, message],
             };
+            dispatch("selectedConversation", updatedConversation);
+   
+            dispatch("isLoading", false);
+
+            webSocket.send(JSON.stringify({
+               question: message.content,
+               conversation_id: selectedConversation.id,
+            }));
+
+            webSocket.onmessage = (event) => {
+               const response = event.data;
+               chunks += response;
+               if (first) {
+                  first = false;
+                  updatedConversation.messages.push({
+                     content: response,
+                     role: 'assistant',
+                  });
+                  dispatch('selectedConversation', updatedConversation);
+               } else {
+                  updatedConversation.messages.pop();
+                  updatedConversation.messages.push({
+                     content: chunks,
+                     role: 'assistant',
+                  });
+                  dispatch('selectedConversation', updatedConversation);
+               }
+               if (stopConversationRef.current) {
+                  webSocket.close();
+                  dispatch('isLoading', false);
+                  dispatch('messageIsStreaming', false);
+               }
+            };
+         };
+
+         // Handle WebSocket errors and close the connection properly
+         webSocket.onerror = (error) => {
+            errorToast('Có lỗi phía server. Vui lòng thử lại sau');
+            webSocket.close();
+            dispatch('isLoading', false);
+            dispatch('messageIsStreaming', false);
+         };
+         webSocket.onclose = () => {
+            console.log('Closed connected socket');
+            dispatch('isLoading', false);
+            dispatch('messageIsStreaming', false);
          }
-         dispatch("selectedConversation", updatedConversation);
+      },
+      [selectedConversation, dispatch]
+   );
+
+   /* const handleSend = useCallback(
+      async (message: Message) => {
          dispatch("isLoading", true);
          dispatch("messageIsStreaming", true);
 
          const controller = new AbortController();
          let response;
          try {
-            response = await fetch(`${process.env.API_ENDPOINT}/conversation/chat`, {
+            response = await fetch(`${process.env.CHATBOT_ENDPOINT}/chat`, {
                method: "POST",
-               headers: { 'Content-Type': 'application/json'},
-               body: JSON.stringify({ question: message.content }),
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ question: message.content, conversation_id: selectedConversation.id }),
                signal: controller.signal,
                credentials: 'include',
             })
-            // errorToast(response.status.toString())
-            if (!response.body || response.status !== HttpStatusCode.Created) {
-               errorToast('Không nhận được phản hồi từ server');
-               dispatch('messageIsStreaming', false);
+
+            if (!response.body || response.status !== StatusCodes.OK) {
+               errorToast('Có lỗi xảy ra khi truy vấn. Vui lòng thử lại sau');
                dispatch('isLoading', false);
+               dispatch('messageIsStreaming', false);
                return;
             }
-         } catch {
+         } catch (e) {
             errorToast('Có lỗi xảy ra khi truy vấn. Vui lòng thử lại sau');
+            dispatch('isLoading', false);
             dispatch('messageIsStreaming', false);
             return;
          }
 
-         if (updatedConversation.messages.length === 1) {
-            const { content } = message;
-            const customName =
-               content.length > 20 ? content.substring(0, 20) + '...' : content;
-            updatedConversation = {
-               ...updatedConversation,
-               title: customName,
-            };
-         }
+         if (!selectedConversation) return;
+         let updatedConversation = {
+            ...selectedConversation,
+            messages: [...selectedConversation.messages, message],
+         };
+         dispatch("selectedConversation", updatedConversation);
 
          dispatch('isLoading', false);
 
@@ -141,12 +212,9 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
             }
          }
 
-         const { all } = updateConversation(updatedConversation, conversations);
-         dispatch('conversations', all);
-
          dispatch('messageIsStreaming', false);
       },
-      [selectedConversation, dispatch, conversations]);
+      [selectedConversation, dispatch]); */
 
    const handleScroll = () => {
       if (chatContainerRef.current) {
@@ -181,9 +249,11 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
 
    useEffect(() => {
       throttledScrollDown();
-      selectedConversation &&
+      selectedConversation.messages.length > 0 &&
          setCurrentMessage(
-            selectedConversation.messages[selectedConversation.messages.length - 2],
+            selectedConversation.messages[selectedConversation.messages.length - 1].role === 'assistant'
+               ? selectedConversation.messages[selectedConversation.messages.length - 2]
+               : selectedConversation.messages[selectedConversation.messages.length - 1]
          );
    }, [selectedConversation, throttledScrollDown]);
 
@@ -212,7 +282,7 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
    }, [messagesEndRef]);
 
    return (
-      <>
+      <Suspense fallback={<Loading />}>
          <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#212121]">
             {!selectedConversation?.messages.length ? (
                <div className="m-auto h-full flex flex-col items-center justify-center space-y-5 md:space-y-10 px-3 pt-5 md:pt-12 sm:max-w-[600px]">
@@ -221,7 +291,7 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
                      alt="Logo Chatbot"
                      width={60}
                      height={60}
-                     className="rounded-full hover:animate-bounceupdown"
+                     className="rounded-full animate-bounceupdown"
                      loading='lazy' />
                   <div className="opacity-70">Hãy đặt một câu hỏi...</div>
                </div>
@@ -235,18 +305,10 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
                      <MemoizedChatMessage
                         onSend={(message) => {
                            setCurrentMessage(message);
-                           handleSend(message, 0);
+                           handleSend(message);
                         }}
                         key={index}
-                        message={message}
-                        messageIndex={index}
-                        onEdit={(editedMessage) => {
-                           setCurrentMessage(editedMessage);
-                           handleSend(
-                              editedMessage,
-                              selectedConversation?.messages.length - index
-                           );
-                        }} />
+                        message={message}/>
                   ))}
 
                   {isLoading && <ChatLoader />}
@@ -261,18 +323,18 @@ const ChatArea: React.FC<Props> = ({ conversationId: id = "" }) => {
                textareaRef={textareaRef}
                onSend={(message) => {
                   setCurrentMessage(message);
-                  handleSend(message, 0);
+                  handleSend(message);
                }}
                onScrollDownClick={handleScrollDown}
                onRegenerate={() => {
                   if (currentMessage) {
-                     handleSend(currentMessage, 2);
+                     handleSend(currentMessage);
                   }
                }}
                showScrollDownButton={showScrollDownButton}
             />
          </div>
-      </>
+      </Suspense>
    )
 };
 export default memo(ChatArea);
