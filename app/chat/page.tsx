@@ -1,7 +1,8 @@
-import { EmptyChatArea } from "@/components/Chat/EmptyChatArea";
-const NewConversation = async ({ }) => {
+import NonSaveChatErea from "@/components/Chat/NonSaveChatArea";
+
+const NonSaveConversation = async ({ }) => {
   return (
-    <EmptyChatArea/>
+    <NonSaveChatErea />
   );
 }
-export default NewConversation;
+export default NonSaveConversation;

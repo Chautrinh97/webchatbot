@@ -9,17 +9,14 @@ import { throttle } from "@/utils/throttle";
 import Image from 'next/image'
 import { errorToast } from "@/utils/toast";
 import icon from "../../app/icon_75.jpg"
-import { apiServiceClient } from "@/app/apiService/apiService";
-import { StatusCodes } from "http-status-codes";
 import { useRouter } from "next/navigation";
 import { Loading } from "../Others/Loading";
+import { IoIosRefresh } from "react-icons/io";
 import { Tooltip } from "@nextui-org/react";
-import { MdHistory } from "react-icons/md";
 
-
-const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
+const NonSaveChatErea = () => {
    const {
-      state: { isLoading, selectedConversation },
+      state: { isLoading, selectedConversation, messageIsStreaming },
       dispatch,
    } = useAppStore();
    const [currentMessage, setCurrentMessage] = useState<Message>();
@@ -33,35 +30,19 @@ const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
    const router = useRouter();
 
    useEffect(() => {
-      const fetchMessages = async () => {
-         try {
-            const response = await apiServiceClient.get(`/conversation/${conversationSlug}`);
-            if (response.status === StatusCodes.NOT_FOUND) {
-               errorToast('Không tìm thấy đoạn hội thoại. Đang chuyển hướng...');
-               router.push('/chat');
-               return;
-            } else if (response.status === StatusCodes.FORBIDDEN) {
-               errorToast('Không phải đoạn hội thoại của bạn. Đang chuyển hướng...');
-               router.push('/chat');
-               return;
-            }
-            const result = await response.json();
-            dispatch('selectedConversation', result);
-         } catch {
-            return (
-               <div className="flex flex-col items-center justify-center mt-24 gap-3">
-                  <span>Có lỗi phía server. Vui lòng thử lại sau</span>
-               </div>
-            );
-         }
+      const nonSaveConversation: Conversation = {
+         id: 0,
+         title: '',
+         slug: "",
+         messages: []
       }
-      fetchMessages();
+      dispatch('selectedConversation', nonSaveConversation);
       // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
    const handleSend = useCallback(
       async (message: Message) => {
-         const webSocket = new WebSocket(`${process.env.CHATBOT_ENDPOINT}/chat`);
+         const webSocket = new WebSocket(`${process.env.CHATBOT_ENDPOINT}/non-save-chat`);
          let updatedConversation: Conversation;
 
          if (!selectedConversation) return;
@@ -83,7 +64,6 @@ const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
 
             webSocket.send(JSON.stringify({
                question: message.content,
-               conversation_id: selectedConversation.id,
             }));
 
             webSocket.onmessage = (event) => {
@@ -127,6 +107,19 @@ const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
       },
       [selectedConversation, dispatch]
    );
+
+   const handleRefreshChat = () => {
+      router.refresh();
+
+      /* dispatch('selectedConversation', {
+         id: 0,
+         title: '',
+         slug: "",
+         messages: []
+      }); */
+
+      return;
+   }
 
    /* const handleSend = useCallback(
       async (message: Message) => {
@@ -286,11 +279,6 @@ const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
    return (
       <Suspense fallback={<Loading />}>
          <div className="relative flex-1 overflow-hidden bg-white dark:bg-[#212121]">
-            <Tooltip content='Chat không lưu lịch sử' placement="bottom">
-               <a href='/chat' className="absolute top-12 right-8 z-20 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-700">
-                  <MdHistory size={22}/>
-               </a>
-            </Tooltip>
             {!selectedConversation?.messages.length ? (
                <div className="m-auto h-full flex flex-col items-center justify-center space-y-5 md:space-y-10 px-3 pt-5 md:pt-12 sm:max-w-[600px]">
                   <Image
@@ -300,31 +288,44 @@ const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
                      height={60}
                      className="rounded-full animate-bounceupdown"
                      loading='lazy' />
+                  <div className="text-xs ">
+                     <p className="opacity-80">Để lưu lịch sử, tạo đoạn hội thoại mới</p>
+                     <p className="opacity-80">Hoặc chọn đoạn hội thoại đã tồn tại</p>
+                  </div>
                   <div className="text-lg">Hãy đặt một câu hỏi...</div>
                </div>
             ) : (
-               <div
-                  className="max-h-full overflow-x-hidden"
-                  id="conversation-export"
-                  ref={chatContainerRef}
-                  onScroll={handleScroll}
-               >
-                  {selectedConversation?.messages.map((message, index) => (
-                     <MemoizedChatMessage
-                        onSend={(message) => {
-                           setCurrentMessage(message);
-                           handleSend(message);
-                        }}
-                        key={index}
-                        message={message} />
-                  ))}
-
-                  {isLoading && <ChatLoader />}
-
+               <>
+                  <Tooltip content='Làm mới đoạn chat' placement="bottom">
+                     <button
+                        onClick={handleRefreshChat}
+                        disabled={messageIsStreaming}
+                        className="absolute top-12 right-8 z-20 p-2 rounded-full hover:bg-gray-200 dark:hover:bg-neutral-700">
+                        <IoIosRefresh size={20} />
+                     </button>
+                  </Tooltip>
                   <div
-                     className="h-[162px] bg-white dark:bg-[#212121]"
-                     ref={messagesEndRef} />
-               </div>
+                     id="conversation-export"
+                     className="max-h-full overflow-x-hidden"
+                     ref={chatContainerRef}
+                     onScroll={handleScroll}>
+                     {selectedConversation?.messages.map((message, index) => (
+                        <MemoizedChatMessage
+                           onSend={(message) => {
+                              setCurrentMessage(message);
+                              handleSend(message);
+                           }}
+                           key={index}
+                           message={message} />
+                     ))}
+
+                     {isLoading && <ChatLoader />}
+
+                     <div
+                        className="h-[162px] bg-white dark:bg-[#212121]"
+                        ref={messagesEndRef} />
+                  </div>
+               </>
             )}
             <ChatInput
                stopConversationRef={stopConversationRef}
@@ -345,4 +346,4 @@ const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
       </Suspense>
    )
 };
-export default memo(ChatArea);
+export default memo(NonSaveChatErea);

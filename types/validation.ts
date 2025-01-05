@@ -14,7 +14,7 @@ export const AddUserFormSchema = LoginFormSchema.extend({
    authorityGroup: z.string().transform((value) => (value === '' ? null : Number(value))),
 });
 
-export const EditUserSchemaVerified = AddUserFormSchema.omit({ password: true });
+export const EditUserSchemaVerified = AddUserFormSchema.omit({password: true});
 export const EditUserSchemaUnverified = AddUserFormSchema.extend({
    password: z
       .string()
@@ -49,52 +49,70 @@ const allowedFileTypes =
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
    ];
 
-const dateSchema = z.string()
-   .optional()
-   .refine(
-      (value) =>
-         !value ||
-         /^\d{4}-\d{2}-\d{2}$/.test(value),
-      {
-         message: "Ngày phải đúng định dạng YYYY-MM-DD",
-      });
+const dateSchema =
+   z.string()
+      .optional()
+      .refine(
+         (value) =>
+            !value ||
+            /^\d{4}-\d{2}-\d{2}$/.test(value),
+         {
+            message: "Ngày phải đúng định dạng YYYY-MM-DD",
+         }
+      );
 export const DocumentFormSchema = z.object({
    title: z.string().trim().min(1, { message: 'Tên văn bản không được để trống.' }),
    referenceNumber: z.string().trim(),
    issuanceDate: dateSchema,
    effectiveDate: dateSchema,
-   validityStatus: z.string(),
    invalidDate: dateSchema,
    isRegulatory: z.string(),
+   validityStatus: z.string(),
    documentField: z.string().transform((value) => (value === '' ? null : Number(value))),
    documentType: z.string().transform((value) => (value === '' ? null : Number(value))),
    issuingBody: z.string().transform((value) => (value === '' ? null : Number(value))),
-   file: z.any()
-   // .refine((files) => files.length === 1 ? allowedFileTypes.includes(files?.[0].type) ? true : false : true, {
-   //    message: "Chỉ cho phép văn bản định dạng Word hoặc PDF.",
-   // })
-   // .refine((files) => {
-   //    if (files.length === 1) {
-   //       const file = files?.[0];
-   //       if (file.type === "application/pdf") {
-   //          if (file.size > 5 * 1024 * 1024) return false;
-   //       }
-   //       else {
-   //          if (file.size > 200 * 1024) return false;
-   //       }
-   //       return true;
-   //    }
-   //    return true;
-   // }, { message: "Vượt quá kích thước tối đa (PDF: 5MB, WORD: 200KB)" }),
-}).superRefine((data, ctx) => {
-   if (data.validityStatus === "false" && !data.invalidDate) {
-      ctx.addIssue({
-         code: 'custom',
-         path: ["invalidDate"],
-         message: "Phải thêm ngày hết hiệu lực.",
-      });
+   files: z.any()
+}).refine(
+   ({ issuanceDate, effectiveDate, invalidDate }) =>
+      !(issuanceDate && invalidDate) || effectiveDate,
+   {
+      message: 'Ngày hiệu lực là bắt buộc.',
+      path: ['effectiveDate'],
+   },
+).refine(
+   ({ issuanceDate, effectiveDate }) =>
+      !issuanceDate || !effectiveDate || issuanceDate <= effectiveDate,
+   {
+      message: 'Ngày ban hành không vượt quá ngày hiệu lực.',
+      path: ['issuanceDate'],
+   },
+).refine(
+   ({ effectiveDate, invalidDate }) =>
+      !effectiveDate || !invalidDate || effectiveDate <= invalidDate,
+   {
+      message: 'Ngày hết hiệu lực không nhỏ hơn ngày hiệu lực.',
+      path: ['invalidDate'],
+   },
+).refine(
+   ({ validityStatus, invalidDate }) => {
+      if (validityStatus === "false" && invalidDate) {
+         const currentDate = new Date().toISOString().split("T")[0];
+         return invalidDate <= currentDate;
+      }
+      return true;
+   },
+   {
+      message: "Ngày hết hiệu lực không vượt quá ngày hiện tại.",
+      path: ["invalidDate"],
    }
-});
+).refine(
+   ({ validityStatus, invalidDate }) =>
+      !(validityStatus === "false") || invalidDate, 
+   {
+      message: "Ngày hết hiệu lực là bắt buộc.",
+      path: ["invalidDate"],
+   }
+);
 
 export const ChangePasswordSchemas = z.object({
    oldPassword: z.string().trim(),

@@ -21,8 +21,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { AuthorityGroup } from "@/types/manage";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
-import { useUserStore } from "@/app/store/user.store";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 export type EditVerifiedUserForm = z.TypeOf<typeof EditUserSchemaVerified>;
 export type EditUnverifiedUserUserForm = z.TypeOf<typeof EditUserSchemaUnverified>;
@@ -32,7 +31,6 @@ export const EditUserModal = ({ id }: { id: number }) => {
    const modalUnverified = useDisclosure();
    const [authorityGroups, setAuthorityGroups] = useState<AuthorityGroup[]>([]);
    const [isVerified, setIsVerified] = useState<boolean>(false);
-   const { user } = useUserStore(); 
 
    const {
       register: registerVerified,
@@ -75,11 +73,13 @@ export const EditUserModal = ({ id }: { id: number }) => {
       if (result.isVerified) {
          setValueVerfied('fullName', result.fullName);
          setValueVerfied('email', result.email);
+         setValueVerfied('role', result.role);
          setValueVerfied('authorityGroup', result.authorityGroup?.id);
          modalVerified.onOpen();
       } else {
          setValueUnverified('fullName', result.fullName);
          setValueUnverified('email', result.email);
+         setValueVerfied('role', result.role);
          setValueUnverified('authorityGroup', result.authorityGroup?.id);
          modalUnverified.onOpen();
       }
@@ -181,7 +181,7 @@ export const EditUserModal = ({ id }: { id: number }) => {
                {(onClose) => (
                   <>
                      <form onSubmit={handleSubmitUnverified(onSubmitUnverified)}>
-                        <ModalHeader className="flex items-center gap-2 bg-blue-600 text-white">
+                        <ModalHeader className="flex items-center gap-2 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 text-white">
                            <TbUserEdit size={24} /> Cập nhật người dùng
                         </ModalHeader>
                         <Divider />
@@ -303,7 +303,7 @@ export const EditUserModal = ({ id }: { id: number }) => {
                {(onClose) => (
                   <>
                      <form onSubmit={handleSubmitVerified(onSubmitVerified)}>
-                        <ModalHeader className="flex items-center gap-2 bg-blue-600 text-white">
+                        <ModalHeader className="flex items-center gap-2 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 text-white">
                            <TbUserEdit size={24} /> Cập nhật người dùng
                         </ModalHeader>
                         <Divider />
@@ -339,7 +339,9 @@ export const EditUserModal = ({ id }: { id: number }) => {
                                        {...registerVerified("email")}
                                        type="text"
                                        readOnly={isVerified}
-                                       className="py-2 px-3 block w-full bg-gray-100 text-sm rounded-md focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                       className="py-2 px-3 block w-full bg-gray-100 text-sm rounded-md focus:border-blue-500 focus:ring-blue-500 
+                                       hover:cursor-not-allowed
+                                       disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
                                        placeholder={`Nhập địa chỉ email `} />
                                  </div>
                                  {errorVerified.email?.message &&

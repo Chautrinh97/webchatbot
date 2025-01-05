@@ -83,7 +83,7 @@ export const FilterDocumentComponent = (
       router.push(`/manage/document?${params.toString()}`);
    };
    return (
-      <div className="grid grid-cols-10 gap-y-4">
+      <div className="grid grid-cols-10 gap-y-4 ">
          <div className="col-span-2 flex items-center">
             <PageLimitComponent pageLimit={pageLimit} pageURI="/manage/document" />
          </div>
@@ -107,14 +107,14 @@ export const FilterDocumentComponent = (
             </select>
          </div>
          <div className="col-span-2 text-end pe-3">Tính pháp quy</div>
-         <div className="col-span-3">
+         <div className="col-span-2">
             <select
                onChange={(e) => handleChangeIsRegulatory(e)}
                value={isRegulatory}
                className="border border-gray-300 rounded-md dark:bg-neutral-700 focus:ring-blue-500 focus:border-blue-500 block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500">
                <option value="">Tất cả </option>
-               <option value="true">Chỉ hiện văn bản pháp quy </option>
-               <option value="false">Chỉ hiện văn bản thường </option>
+               <option value="true">Văn bản pháp quy </option>
+               <option value="false">Văn bản thông thường </option>
             </select>
          </div>
 
@@ -135,7 +135,7 @@ export const FilterDocumentComponent = (
             </select>
          </div>
          <div className="col-span-2 text-end pe-3">Trạng thái hiệu lực</div>
-         <div className="col-span-3">
+         <div className="col-span-2">
             <select
                onChange={(e) => handleChangeValidityStatus(e)}
                value={isValid}
@@ -162,7 +162,7 @@ export const FilterDocumentComponent = (
             </select>
          </div>
          <div className="col-span-2 text-end pe-3">Trạng thái đồng bộ</div>
-         <div className="col-span-3">
+         <div className="col-span-2">
             <select
                onChange={(e) => handleChangeSyncStatus(e)}
                value={isSync}

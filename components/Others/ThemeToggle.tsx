@@ -1,6 +1,7 @@
 "use client"
 import { HiMiniMoon, HiMiniSun } from 'react-icons/hi2';
 import { useTheme } from 'next-themes';
+import { Tooltip } from '@nextui-org/react';
 
 export const ThemeToggle: React.FC<{ isVertical?: boolean }> = ({ isVertical = false }) => {
    const { setTheme, resolvedTheme } = useTheme();
@@ -11,13 +12,12 @@ export const ThemeToggle: React.FC<{ isVertical?: boolean }> = ({ isVertical = f
          setTheme("dark");
    };
    return (
-      <>
+      <Tooltip content='Đổi màu nền' color='default'>
          <label className='relative inline-flex cursor-pointer select-none items-center'>
             <input
                type='checkbox'
                checked={resolvedTheme === "light"}
                onChange={handleCheckboxChange}
-               title='Đổi màu nền'
                className='sr-only'
             />
             <div className={`flex gap-2 justify-center items-center border border-neutral-800 transition-opacity ease-in-out duration-300 opacity-80 hover:opacity-100 shadow-card rounded-full bg-sb-white
@@ -34,6 +34,6 @@ export const ThemeToggle: React.FC<{ isVertical?: boolean }> = ({ isVertical = f
                </span>
             </div>
          </label>
-      </>
+      </Tooltip>
    );
 };

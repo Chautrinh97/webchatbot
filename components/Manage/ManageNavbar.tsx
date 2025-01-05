@@ -11,9 +11,10 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { errorToast, successToast } from "@/utils/toast";
 import { useRouter } from "next/navigation";
 import { ManageAccountModal } from "../Auth/ManageAccountModal";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
+import { useUserStore } from "@/app/store/user.store";
 
-export const ManageNavbar = ({ user }: { user: any }) => {
+export const ManageNavbar = () => {
    const router = useRouter();
    const {
       state: { isSidebarOpen },
@@ -23,7 +24,7 @@ export const ManageNavbar = ({ user }: { user: any }) => {
    const handleToggleSidebar = () => {
       dispatch("isSidebarOpen", !isSidebarOpen);
    }
-   // const { user, setUser } = useUserStore();
+   const { user, setUser } = useUserStore();
    const accountModal = useDisclosure();
 
    const handleLogout = async () => {
@@ -62,7 +63,6 @@ export const ManageNavbar = ({ user }: { user: any }) => {
 
    const handleOpenModal = () => {
       try {
-         // fetchUser();
          accountModal.onOpen();
       } catch {
          errorToast('Có lỗi khi tải dữ liệu. Vui lòng thử lại sau');
@@ -71,11 +71,11 @@ export const ManageNavbar = ({ user }: { user: any }) => {
    }
 
    return (
-      <div className="fixed top-0 z-50 w-full bg-blue-700 border-b border-neutral-200 dark:border-gray-700">
+      <div className="fixed top-0 z-50 w-full bg-gradient-to-r from-blue-500 via-blue-700 to-blue-500">
          <div className="px-3 py-3 lg:px-5 lg:pl-3">
             <div className="flex items-center justify-between">
                <div className="flex items-center justify-start rtl:justify-end">
-                  <Tooltip content={isSidebarOpen? 'Đóng menu':'Mở menu'} placement={'bottom-end'}>
+                  <Tooltip content={isSidebarOpen ? 'Đóng menu' : 'Mở menu'} placement={'bottom-end'}>
                      <button
                         className="flex justify-center items-center h-7 w-7 sm:h-8 sm:w-8 rounded-md text-neutral-400 hover:text-black bg-gray-200 hover:bg-gray-100 dark:text-neutral-500 dark:hover:text-white dark:bg-neutral-300 dark:hover:bg-neutral-600"
                         onClick={handleToggleSidebar}>
@@ -102,13 +102,16 @@ export const ManageNavbar = ({ user }: { user: any }) => {
                   </Link>
                   <ThemeToggle />
                   <Dropdown>
-                     <DropdownTrigger>
-                        <button
-                           title="Tùy chọn"
-                           className="flex justify-center items-center h-7 w-7 rounded-full text-black bg-white">
-                           <TbUser size={20} />
-                        </button>
-                     </DropdownTrigger>
+                     <Tooltip content='Tùy chọn' placement='bottom-start'>
+                        <div>
+                           <DropdownTrigger>
+                              <button
+                                 className="flex justify-center items-center h-7 w-7 rounded-full text-black bg-white">
+                                 <TbUser size={20} />
+                              </button>
+                           </DropdownTrigger>
+                        </div>
+                     </Tooltip>
                      <DropdownMenu aria-label="Static Actions" disabledKeys={["email"]}>
                         <DropdownItem key="email" className="flex justify-start" showDivider>
                            <span>{user.fullName}</span>

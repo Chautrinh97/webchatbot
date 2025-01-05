@@ -12,17 +12,17 @@ export const UserRoleConstant = {
 }
 
 export const UserPermissionConstant = {
-   MANAGE_DOCUMENTS: 'manage_documents',
-   MANAGE_DOCUMENTS_PROPERTIES: 'manage_documents_properties', 
+   MANAGE_DOCUMENT_PROPERTIES: 'manage_document_properties', 
+   MANAGE_ALL_DOCUMENTS: 'manage_all_documents',
+   MANAGE_OWN_DOCUMENTS: 'manage_own_documents',
    MANAGE_USERS: 'manage_users',
-   VIEW_STATISTIC_CHATBOT: 'view_statistic_chatbot',
 }
 
 export const PermissionsConstant = [
-   { id: 1, name: 'manage_documents_properties', description: 'Quản lý văn bản và các thuộc tính.' },
-   { id: 2, name: 'manage_documents', description: 'Quản lý văn bản.' },
-   { id: 3, name: 'manage_users', description: 'Quản lý người dùng.' },
-   { id: 4, name: 'view_statistic_chatbot', description: 'Xem thống kê truy vấn chatbot.' },
+   { id: 1, name: 'manage_document_properties', description: 'Quản lý các thuộc tính văn bản.' },
+   { id: 2, name: 'manage_all_documents', description: 'Quản lý tất cả các văn bản.' },
+   { id: 3, name: 'manage_own_documents', description: 'Quản lý chỉ các văn bản tự tạo.' },
+   { id: 4, name: 'manage_users', description: 'Quản lý người dùng.' },
 ];
 
 export const MimeType = {

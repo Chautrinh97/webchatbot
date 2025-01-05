@@ -64,7 +64,7 @@ export const DeleteDocumentModal = ({ id }: { id: number }) => {
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
                   <>
-                     <ModalHeader className="flex items-center gap-1 bg-red-600 text-white">
+                     <ModalHeader className="flex items-center gap-1 bg-gradient-to-r from-red-500 via-red-600 to-red-500 text-white">
                         <TiDocumentDelete size={24} /> Xóa văn bản
                      </ModalHeader>
                      <Divider />

@@ -92,7 +92,7 @@ export const EditDocumentPropertiesModal = (
                {(onClose) => (
                   <>
                      <form onSubmit={handleSubmit(onSubmit)}>
-                        <ModalHeader className="flex gap-1">
+                        <ModalHeader className="flex gap-1 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 text-white">
                            <MdOutlineEdit size={24} /> Cập nhật {propertyText}
                         </ModalHeader>
                         <Divider />

@@ -1,6 +1,7 @@
-import {apiService} from "@/app/apiService/apiService";
+import { apiService } from "@/app/apiService/apiService";
 import { getAccessToken } from "@/app/apiService/cookies";
 import { AddDocumentModal } from "@/components/Manage/Document/AddDocumentModal";
+import { CreatedByFilter } from "@/components/Manage/Document/CreatedByFilter";
 import { DocumentTable } from "@/components/Manage/Document/DocumentTable";
 import { FilterDocumentComponent } from "@/components/Manage/Document/FilterDocumentComponent";
 import { PaginationComponent } from "@/components/Manage/PaginationComponent";
@@ -25,6 +26,7 @@ const fetchData = async (
    isRegulatory: string | null,
    isValid: string | null,
    isSync: string | null,
+   createdBy: boolean | null,
    token: any,
 ) => {
    const response = await apiService.get(`/document`, {
@@ -37,7 +39,8 @@ const fetchData = async (
       isRegulatory,
       isValid,
       isSync,
-   },{
+      createdBy,
+   }, {
       Authorization: `Bearer ${token}`,
    });
    return response;
@@ -86,7 +89,9 @@ const mapDocument = (data: any) => {
       invalidDate: document.invalidDate && document.invalidDate && new Date(document.invalidDate),
       isRegulatory: document.isRegulatory,
       mimeType: document.mimeType,
-      syncStatus: document.syncStatus
+      syncStatus: document.syncStatus,
+      user: document.user ? document.user : null,
+      createdAt: new Date(document.createdAt),
    }));
    return documents;
 }
@@ -101,21 +106,23 @@ const mapProperty = (data: any) => {
 }
 
 const validateSearchParams = (params: any) => {
-   const { 
-      pageNumber, 
-      pageLimit, 
-      documentField, 
-      documentType, 
-      issuingBody, 
+   const {
+      pageNumber,
+      pageLimit,
+      documentField,
+      documentType,
+      issuingBody,
       isRegulatory,
       isValid,
-      isSync,  
+      isSync,
+      createdBy,
    } = params;
 
    const isNumberOrNull = (value: any) =>
       value === null || (!isNaN(parseInt(value)) && parseInt(value) > 0);
    const isBooleanStringValue = (value: any) =>
       value ? value === 'true' || value === 'false' ? value : undefined : undefined;
+   const isCreatedByValue = (value: any) => value ? value === 'true' ? value : undefined : undefined;
 
    return {
       pageNumber: isNumberOrNull(pageNumber) ? parseInt(pageNumber) : 1,
@@ -126,6 +133,7 @@ const validateSearchParams = (params: any) => {
       isRegulatory: isBooleanStringValue(isRegulatory),
       isValid: isBooleanStringValue(isValid),
       isSync: isBooleanStringValue(isSync),
+      createdBy: isCreatedByValue(createdBy),
    };
 };
 
@@ -142,6 +150,7 @@ export default async function DocumentPage(props: { searchParams: Promise<any> }
       isRegulatory,
       isValid,
       isSync,
+      createdBy,
    } = validateSearchParams(searchParams);
 
    try {
@@ -159,6 +168,7 @@ export default async function DocumentPage(props: { searchParams: Promise<any> }
             isRegulatory,
             isValid,
             isSync,
+            createdBy,
             token,
          );
 
@@ -190,7 +200,7 @@ export default async function DocumentPage(props: { searchParams: Promise<any> }
       return (
          <Suspense fallback={<Loading />}>
             <div className="h-full w-full">
-               <div className="flex pt-20 px-6 justify-between relative">
+               <div className="flex pt-20 px-6 justify-between">
                   <FilterDocumentComponent
                      pageLimit={pageLimit}
                      searchKey={searchKey}
@@ -200,10 +210,13 @@ export default async function DocumentPage(props: { searchParams: Promise<any> }
                      issuingBodies={issuingBodies}
                      documentFields={documentFields}
                      documentTypes={documentTypes}
-                     isRegulatory={isRegulatory ? isRegulatory : ""} 
+                     isRegulatory={isRegulatory ? isRegulatory : ""}
                      isValid={isValid ? isValid : ""}
-                     isSync={isSync ? isSync : ""}/>
-                  <AddDocumentModal />
+                     isSync={isSync ? isSync : ""} />
+                  <div className="flex flex-col justify-between items-center">
+                     <AddDocumentModal />
+                     <CreatedByFilter createdBy={createdBy === 'true' ? true : false} />
+                  </div>
                </div>
                <div className="mt-3 flex flex-col relative px-6">
                   <DocumentTable documents={documents} />

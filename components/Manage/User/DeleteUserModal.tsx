@@ -66,7 +66,7 @@ export const DeleteUserModal = ({ id }: { id: number }) => {
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
                   <>
-                     <ModalHeader className="flex items-center gap-2 bg-red-600 text-white">
+                     <ModalHeader className="flex items-center gap-2 bg-gradient-to-r from-red-500 via-red-600 to-red-500 text-white">
                         <HiOutlineUserRemove size={24} /> Xóa người dùng
                      </ModalHeader>
                      <Divider />

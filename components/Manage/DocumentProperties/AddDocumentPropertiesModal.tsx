@@ -67,8 +67,8 @@ export const AddDocumentPropertiesModal = (
 
    return (
       <>
-         {user.permissions?.some((perm) => perm === UserPermissionConstant.MANAGE_DOCUMENTS_PROPERTIES) &&
-            <button className="flex gap-2 p-3 rounded-md text-white bg-blue-600 border hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+         {user.permissions?.some((perm) => perm === UserPermissionConstant.MANAGE_DOCUMENT_PROPERTIES) &&
+            <button className="flex gap-2 p-3 rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700"
                onClick={onOpen}>
                <TbPlus size={20} />
                Thêm {propertyText}
@@ -85,7 +85,7 @@ export const AddDocumentPropertiesModal = (
                {(onClose) => (
                   <>
                      <form onSubmit={handleSubmit(onSubmit)}>
-                        <ModalHeader className="flex items-center gap-1 bg-blue-600 text-white">
+                        <ModalHeader className="flex items-center gap-1 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 border border-blue-600 text-white">
                            <IoIosAddCircleOutline size={24} /> Thêm {propertyText} mới
                         </ModalHeader>
                         <Divider />

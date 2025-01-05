@@ -47,9 +47,9 @@ const ManageLayout = async ({ children }: { children: React.ReactNode }) => {
       <div className="flex h-screen w-screen flex-col text-sm text-black dark:text-white">
          <TokenProvider>
             <UserProvider user={user}>
-               <ManageNavbar user={user} />
+               <ManageNavbar />
                <div className="flex h-full w-full">
-                  <ManageSidebar user={user} />
+                  <ManageSidebar />
                   <div className="flex flex-auto">
                      <div className="relative flex-auto overflow-auto bg-white dark:bg-[#212121]">
                         {children}

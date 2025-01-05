@@ -55,7 +55,7 @@ export const DeleteAuthorityGroupModal = ({ id, isDisabled }: { id: number | und
             <ModalContent className="bg-white dark:bg-neutral-800">
                {(onClose) => (
                   <>
-                     <ModalHeader className="flex items-center gap-2 bg-red-600 text-white">
+                     <ModalHeader className="flex items-center gap-2 bg-gradient-to-r from-red-500 via-red-600 to-red-500 text-white">
                         <MdDelete size={24} /> Xóa nhóm quyền
                      </ModalHeader>
                      <Divider />
@@ -65,7 +65,7 @@ export const DeleteAuthorityGroupModal = ({ id, isDisabled }: { id: number | und
                      </ModalBody>
                      <Divider />
                      <ModalFooter>
-                        <Button color="danger" className="rounded-md text-white border border-red-600 bg-red-700 hover:bg-red-600 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800" onPress={handleDelete}>
+                        <Button color="danger" className="rounded-md text-white border border-red-600 bg-red-600 hover:bg-red-500 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-700" onPress={handleDelete}>
                            Có
                         </Button>
                         <Button color="default" className="rounded-md" variant="light" onPress={onClose}>

@@ -6,7 +6,6 @@ import { StatusCodes } from "http-status-codes";
 import { redirect } from "next/navigation";
 
 const SingleConversationPage = async ({ params }: { params: { slug: string } }) => {
-  console.log(params.slug);
   return (
     <ChatArea conversationSlug={params.slug} />
   );

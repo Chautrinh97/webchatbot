@@ -5,7 +5,7 @@ import { TiDocumentAdd } from "react-icons/ti";
 import { DocumentFormSchema } from "@/types/validation";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { errorToast, errorToastUp, successToast } from "@/utils/toast";
+import { errorToast, successToast } from "@/utils/toast";
 import {
    Button,
    Modal,
@@ -22,10 +22,10 @@ import { DocumentProperty } from "@/types/chat";
 import { useRouter } from "next/navigation";
 import { StatusCodes } from "http-status-codes";
 import { useUserStore } from "@/app/store/user.store";
-import { UserPermissionConstant } from "@/utils/constant";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { MimeType, UserPermissionConstant } from "@/utils/constant";
+import { apiServiceClient } from "@/app/apiService/apiService";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
+import { Viewer } from '@react-pdf-viewer/core';
 
 type AddDocumentForm = z.TypeOf<typeof DocumentFormSchema>;
 export const AddDocumentModal = () => {
@@ -36,7 +36,8 @@ export const AddDocumentModal = () => {
    const [documentFields, setDocumentFields] = useState<DocumentProperty[]>([]);
    const [isSubmitSuccessful, setIsSubmitSuccessful] = useState<boolean>(false);
    const [isPreview, setIsPreview] = useState<boolean>(false);
-   const [files, setFiles] = useState<any>(undefined);
+   const [file, setFile] = useState<any>(undefined);
+   const [url, setUrl] = useState<string>('');
    const [isSyncAction, setIsSyncAction] = useState<boolean>(true);
    const {
       register,
@@ -56,8 +57,8 @@ export const AddDocumentModal = () => {
    const isValid = watch('validityStatus');
    const { user } = useUserStore();
    const hasPermission = user.permissions?.some((permission) =>
-      permission === UserPermissionConstant.MANAGE_DOCUMENTS_PROPERTIES ||
-      permission === UserPermissionConstant.MANAGE_DOCUMENTS);
+      permission === UserPermissionConstant.MANAGE_ALL_DOCUMENTS ||
+      permission === UserPermissionConstant.MANAGE_OWN_DOCUMENTS);
 
    const handleOpenModal = async () => {
       try {
@@ -89,22 +90,22 @@ export const AddDocumentModal = () => {
    }
 
    const onSubmit: SubmitHandler<AddDocumentForm> = async (data) => {
-      const { file, ...santizedData } = data;
+      const { files, ...santizedData } = data;
 
       const formFile = new FormData();
-      formFile.append('file', file?.[0]);
+      formFile.append('file', files?.[0]);
 
       try {
          if (isSyncAction) {
             if (data.validityStatus === "false") {
-               errorToastUp('Không thể thêm và đồng bộ văn bản có trạng thái hiệu lực: Hết hiệu lực');
+               setError('validityStatus', { message: 'Văn bản hết hiệu lực. Không thể thêm và đồng bộ.' });
                return;
-            }            
+            }
          }
-         const maxSize = file?.[0].type === "application/pdf" ? 5 * 1024 * 1024 : 200 * 1024;
-         if (file?.[0].size > maxSize) {
-            setError("file", {
-               message: file?.[0].type === "application/pdf"
+         const maxSize = files?.[0].type === "application/pdf" ? 5 * 1024 * 1024 : 200 * 1024;
+         if (files?.[0].size > maxSize) {
+            setError("files", {
+               message: files?.[0].type === "application/pdf"
                   ? "Kích thước file PDF không được vượt quá 5MB."
                   : "Kích thước file Word không được vượt quá 200KB."
             });
@@ -122,16 +123,16 @@ export const AddDocumentModal = () => {
          if (isSyncAction) {
             formData = {
                ...santizedData,
-               mimeType: file?.[0].type,
-               documentSize: file?.[0].size,
+               mimeType: files?.[0].type,
+               documentSize: files?.[0].size,
                key: key,
                isSync: true,
             };
          } else {
             formData = {
                ...santizedData,
-               mimeType: file?.[0].type,
-               documentSize: file?.[0].size,
+               mimeType: files?.[0].type,
+               documentSize: files?.[0].size,
                key: key,
                isSync: false,
             };
@@ -139,7 +140,7 @@ export const AddDocumentModal = () => {
          if (data.validityStatus === "true") {
             formData = {
                ...formData,
-               invalidDate: '',
+               invalidDate: undefined,
             }
          }
          const response = await apiServiceClient.post('/document/', formData);
@@ -167,42 +168,46 @@ export const AddDocumentModal = () => {
       reset();
       setIsSubmitSuccessful(false);
       setIsPreview(false);
-      setFiles(undefined);
+      setFile(undefined);
    }, [isSubmitSuccessful, reset]);
 
    const handleCloseModal = () => {
+      reset();
+      clearErrors();
       setIsPreview(false);
-      setFiles(undefined);
+      setFile(undefined);
       onClose();
    }
 
    const handleTogglePreview = () => {
-      if (!(files && files.length > 0)) return;
+      if (!file) return;
       setIsPreview(!isPreview);
    }
 
    const handleSelectedFile = (e: any) => {
-      clearErrors('file');
+      clearErrors('files');
       if (e.target.files && e.target.files.length > 0) {
-         setFiles(Array.from(e.target.files));
+         setFile(e.target.files[0]);
+         setUrl(URL.createObjectURL(e.target.files[0]));
       }
       else {
+         setUrl('');
          setIsPreview(false);
-         setFiles(undefined);
+         setFile(undefined);
       }
    }
 
    return (
       <>
          {hasPermission &&
-            <button className="flex absolute top-20 right-5 gap-2 p-3 rounded-md text-white bg-blue-600 border hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            <button className="flex gap-2 p-3 rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700"
                onClick={handleOpenModal}>
                <TbPlus size={20} /> Thêm văn bản
             </button>
          }
          <Modal
             backdrop="blur"
-            size="5xl"
+            size="full"
             isOpen={isOpen}
             onClose={onClose}
             hideCloseButton={true}
@@ -212,19 +217,20 @@ export const AddDocumentModal = () => {
                {(onClose) => {
                   return (
                      <>
-                        <ModalHeader className="flex items-center gap-1 bg-blue-600 text-white">
+                        <ModalHeader className="flex items-center gap-1 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 border border-blue-600 text-white">
                            <TiDocumentAdd size={24} />Thêm văn bản mới
                         </ModalHeader>
                         <ModalBody className="justify-center items-center">
-                           <form onSubmit={handleSubmit(onSubmit)} id="submitAddForm" className="flex h-full justify-center">
-                              <div className={`${isPreview ? 'w-1/3' : 'w-3/4'} grid grid-cols-2 gap-3 mt-4 mb-2`}>
-                                 <div className="grid grid-cols-12 gap-10 my-2 mr-2">
-                                    <div className="sm:col-span-4">
+                           <form onSubmit={handleSubmit(onSubmit)} id="submitAddForm"
+                              className="flex h-full w-1/2 justify-center">
+                              <div className='flex gap-3 mb-2'>
+                                 <div className="grid grid-cols-8 gap-10 my-2 mr-2">
+                                    <div className="col-span-2 mt-4">
                                        <label htmlFor="name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Tên văn bản
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8">
+                                    <div className="col-span-6 mt-4">
                                        <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
                                           <textarea
                                              {...register("title")}
@@ -237,12 +243,12 @@ export const AddDocumentModal = () => {
                                              <TbAlertCircle className="me-1" /> {errors.title?.message}
                                           </div>}
                                     </div>
-                                    <div className="sm:col-span-4">
+                                    <div className="col-span-2">
                                        <label htmlFor="referenceNumber" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Số hiệu
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8">
+                                    <div className="col-span-6">
                                        <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
                                           <input
                                              {...register("referenceNumber")}
@@ -255,12 +261,12 @@ export const AddDocumentModal = () => {
                                              <TbAlertCircle className="me-1" /> {errors.referenceNumber?.message}
                                           </div>}
                                     </div>
-                                    <div className="sm:col-span-4 flex items-center">
+                                    <div className="col-span-2 flex items-center">
                                        <label htmlFor="issuingBody" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Cơ quan ban hành
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8 flex items-center mt-2.5">
+                                    <div className="col-span-6 flex items-center mt-2.5">
                                        <select
                                           className="border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                           {...register('issuingBody')}>
@@ -272,12 +278,12 @@ export const AddDocumentModal = () => {
                                           ))}
                                        </select>
                                     </div>
-                                    <div className="sm:col-span-4 flex items-center">
+                                    <div className="col-span-2 flex items-center">
                                        <label htmlFor="documentField" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Lĩnh vực
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8 flex items-center mt-2.5">
+                                    <div className="col-span-6 flex items-center mt-2.5">
                                        <select
                                           className="border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                           {...register('documentField')}>
@@ -289,12 +295,12 @@ export const AddDocumentModal = () => {
                                           ))}
                                        </select>
                                     </div>
-                                    <div className="sm:col-span-4 flex items-center">
+                                    <div className="col-span-2 flex items-center">
                                        <label htmlFor="documentType" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Loại văn bản
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8 flex items-center mt-2.5">
+                                    <div className="col-span-6 flex items-center mt-2.5">
                                        <select className="border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                           {...register('documentType')}>
                                           <option value="">Chọn loại văn bản</option>
@@ -306,13 +312,13 @@ export const AddDocumentModal = () => {
                                        </select>
                                     </div>
                                  </div>
-                                 <div className="grid grid-cols-12 gap-10 my-2 ps-4 border-l">
-                                    <div className="sm:col-span-4">
+                                 <div className="grid grid-cols-8 gap-10 my-2 ps-4 border-l">
+                                    <div className="col-span-2">
                                        <label htmlFor="issuingDate" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Ngày ban hành
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8">
+                                    <div className="col-span-6">
                                        <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
                                           <input
                                              {...register("issuanceDate")}
@@ -325,12 +331,12 @@ export const AddDocumentModal = () => {
                                              <TbAlertCircle className="me-1" /> {errors.issuanceDate?.message}
                                           </div>}
                                     </div>
-                                    <div className="sm:col-span-4">
+                                    <div className="col-span-2">
                                        <label htmlFor="effectiveDate" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Ngày hiệu lực
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8">
+                                    <div className="col-span-6">
                                        <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
                                           <input
                                              {...register("effectiveDate")}
@@ -343,12 +349,12 @@ export const AddDocumentModal = () => {
                                              <TbAlertCircle className="me-1" /> {errors.effectiveDate?.message}
                                           </div>}
                                     </div>
-                                    <div className="sm:col-span-4">
+                                    <div className="col-span-2">
                                        <label htmlFor="isRegulatory" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Tính pháp quy
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8 flex ms-3">
+                                    <div className="col-span-6 flex ms-3">
                                        <div className="flex mt-2.5 me-4 items-start">
                                           <input id="is-regulatory-yes" type="radio" value="true" {...register('isRegulatory')}
                                              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
@@ -360,30 +366,36 @@ export const AddDocumentModal = () => {
                                           <label htmlFor="is-regulatory-no" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Văn bản thông thường</label>
                                        </div>
                                     </div>
-                                    <div className="sm:col-span-4">
+                                    <div className="col-span-2">
                                        <label htmlFor="validityStatus" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Trạng thái hiệu lực
                                        </label>
                                     </div>
-                                    <div className="sm:col-span-8 flex ms-3">
-                                       <div className="flex items-start mt-2.5 me-4">
-                                          <input id="validity-status-yes" type="radio" value="true" {...register('validityStatus')}
-                                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                          <label htmlFor="validity-status-yes" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Còn hiệu lực</label>
+                                    <div className="col-span-6 flex flex-col ms-3">
+                                       <div>
+                                          <div className="flex items-start mt-2.5 me-4">
+                                             <input id="validity-status-yes" type="radio" value="true" {...register('validityStatus')}
+                                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                             <label htmlFor="validity-status-yes" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Còn hiệu lực</label>
+                                          </div>
+                                          <div className="flex items-start mt-2.5 me-4">
+                                             <input id="validity-status-no" type="radio" value="false" {...register('validityStatus')}
+                                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
+                                             <label htmlFor="validity-status-no" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Hết hiệu lực</label>
+                                          </div>
                                        </div>
-                                       <div className="flex items-start mt-2.5 me-4">
-                                          <input id="validity-status-no" type="radio" value="false" {...register('validityStatus')}
-                                             className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" />
-                                          <label htmlFor="validity-status-no" className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Hết hiệu lực</label>
-                                       </div>
+                                       {errors.validityStatus?.message &&
+                                          <div className="ps-2 flex text-[11px] text-red-600 py-2">
+                                             <TbAlertCircle className="me-1" /> {errors.validityStatus?.message}
+                                          </div>}
                                     </div>
                                     {isValid === "false" &&
                                        <>
-                                          <div className="sm:col-span-4">
+                                          <div className="col-span-2">
                                              <label htmlFor="validityStatus" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                                 Ngày hết hiệu lực
                                              </label>
-                                          </div><div className="sm:col-span-8">
+                                          </div><div className="col-span-6">
                                              <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
                                                 <input
                                                    {...register("invalidDate")}
@@ -398,7 +410,7 @@ export const AddDocumentModal = () => {
                                           </div>
                                        </>
                                     }
-                                    <div className="sm:col-span-4">
+                                    <div className="col-span-2">
                                        <label htmlFor="file" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                           Tệp đính kèm
                                        </label>
@@ -421,29 +433,30 @@ export const AddDocumentModal = () => {
                                           )}
                                        </div>
                                     </div>
-                                    <div className="sm:col-span-8 mt-2.5">
+                                    <div className="col-span-6 mt-2.5">
                                        <input className="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                           type="file"
                                           accept=".doc,.docx,.pdf"
                                           required
-                                          {...register('file')}
+                                          {...register('files')}
                                           onChange={(e) => handleSelectedFile(e)}
                                        />
                                        <p className="mt-1 text-sm text-gray-500 dark:text-gray-300" id="file_input_help">Word (Tối đa 200KB), PDF (Tối đa 5MB).</p>
-                                       {errors.file?.message &&
+                                       {errors.files?.message &&
                                           <div className="ps-2 flex text-[11px] text-red-600 py-2">
-                                             <TbAlertCircle className="me-1" /> {errors.file?.message.toString()}
+                                             <TbAlertCircle className="me-1" /> {errors.files?.message.toString()}
                                           </div>}
                                     </div>
                                  </div>
                               </div>
                               {isPreview &&
                                  <div className="w-1/2 pt-3 px-2 pb-2 mx-2 border rounded-md">
-                                    <DocViewer documents={files.map((file: any) => ({
-                                       uri: window.URL.createObjectURL(file),
-                                    }))}
-                                       pluginRenderers={DocViewerRenderers}
-                                       style={{ width: '100%', height: 600 }} />
+                                    {file.type === MimeType.PDF ? (
+                                       <Viewer fileUrl={url} />
+                                    ) : (
+                                       <>
+                                       </>
+                                    )}
                                  </div>
                               }
                            </form>

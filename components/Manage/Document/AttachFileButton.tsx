@@ -1,5 +1,5 @@
 'use client'
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 import { MimeType } from "@/utils/constant";
 import { errorToast } from "@/utils/toast";
 import { Tooltip } from "@nextui-org/react";
@@ -30,12 +30,14 @@ export const AttachFileButton = ({ mimeType, id }: { mimeType: string, id: numbe
       }
    };
    return (
-      <Tooltip content='Xem đính kèm' placement={'left'}>
-         <button onClick={handleDownload} className="hover:animate-bounceupdown">
-            {mimeType === MimeType.PDF
-               ? <FaFilePdf size={20} color="red" />
-               : <FaFileWord size={20} color="blue" />}
-         </button>
-      </Tooltip>
+      <>
+         <Tooltip content='Xem đính kèm' placement={'left'}>
+            <button onClick={handleDownload} className="hover:animate-bounceupdown">
+               {mimeType === MimeType.PDF
+                  ? <FaFilePdf size={20} color="red" />
+                  : <FaFileWord size={20} color="blue" />}
+            </button>
+         </Tooltip>
+      </>
    );
 }

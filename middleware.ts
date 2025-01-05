@@ -18,7 +18,7 @@ export async function middleware(req: NextRequest) {
 
    if (isPublicPath) {
       if (accessToken) {
-         if (privatePaths) {
+         if (isPrivatePath) {
             const decoded = jwt.decode(accessToken, { complete: true });
             const payload = decoded?.payload as { [key: string]: any };
             const role = payload["role"];

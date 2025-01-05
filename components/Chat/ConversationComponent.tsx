@@ -121,7 +121,7 @@ export const ConversationComponent = ({ conversation, refetch }: Props) => {
       <div className="relative flex items-center py-1 transition-all ease-in-out duration-150">
          {isRenaming ? (
             <div className={`flex w-full items-center gap-3 rounded-lg hover:bg-gray-300 dark:hover:bg-neutral-700 
-               transition-colors duration-200 p-2 ${isActive(conversation.slug) ? 'bg-gray-300 dark:bg-neutral-700' : ''}`}>
+               transition-colors duration-200 p-2 ${isActive(conversation.slug) ? 'bg-gradient-to-r from-blue-500 to-blue-600' : ''}`}>
                <TbMessage size={18} />
                <input
                   ref={inputRef}
@@ -138,7 +138,7 @@ export const ConversationComponent = ({ conversation, refetch }: Props) => {
                className={`flex w-full cursor-pointer items-center gap-3 rounded-lg p-3 text-sm 
                   hover:bg-gray-300 dark:hover:bg-neutral-700 transition-colors duration-200  
                   ${messageIsStreaming ? 'disabled:cursor-not-allowed' : ''
-                  } ${isActive(conversation.slug) ? 'bg-gray-300 dark:bg-neutral-700' : ''}`}
+                  } ${isActive(conversation.slug) ? 'text-white bg-gradient-to-r from-blue-500 to-blue-600' : ''}`}
                href={`/chat/${conversation.slug}`}
                onClick={(e) => { if (messageIsStreaming) e.preventDefault(); }}
             >
@@ -154,14 +154,18 @@ export const ConversationComponent = ({ conversation, refetch }: Props) => {
             <div className="absolute right-1 z-10 flex text-gray-300">
                <Tooltip content="Đổi tên" placement='bottom'>
                   <button
-                     className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-800 dark:text-neutral-500 dark:hover:text-white"
+                     className={`${isActive(conversation.slug) ? 'text-neutral-300 hover:text-white': 
+                        'text-neutral-400 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-white'}
+                        min-w-[20px] p-1`}
                      onClick={handleOpenRenameModal} >
                      <TbPencil size={18} />
                   </button>
                </Tooltip>
                <Tooltip content="Xóa" placement='bottom' color='danger'>
                   <button
-                     className="min-w-[20px] p-1 text-neutral-400 hover:text-neutral-800 dark:text-neutral-500 dark:hover:text-white"
+                     className={`${isActive(conversation.slug) ? 'text-neutral-300 hover:text-white': 
+                        'text-neutral-400 hover:text-neutral-800 dark:text-neutral-300 dark:hover:text-white'}
+                        min-w-[20px] p-1`}
                      onClick={onOpen}>
                      <TbTrash size={18} />
                   </button>
@@ -170,7 +174,7 @@ export const ConversationComponent = ({ conversation, refetch }: Props) => {
                   <ModalContent>
                      {(onClose) => (
                         <>
-                           <ModalHeader className="flex items-center gap-1 bg-red-600 text-white">
+                           <ModalHeader className="flex items-center gap-1 bg-gradient-to-r from-red-500 via-red-600 to-red-500 text-white">
                               <TbTrash size={20} /> Xóa đoạn hội thoại
                            </ModalHeader>
                            <Divider />

@@ -97,7 +97,7 @@ export const AddUserModal = () => {
 
    return (
       <>
-         <button className="flex gap-2 p-3 rounded-md text-white bg-blue-600 border hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-800 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+         <button className="flex gap-2 p-3 rounded-md text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-800 dark:hover:bg-blue-700"
             onClick={handleOpenModal}>
             <TbPlus size={20} /> Thêm người dùng
          </button>
@@ -112,7 +112,7 @@ export const AddUserModal = () => {
                {(onClose) => (
                   <>
                      <form onSubmit={handleSubmit(onSubmit)}>
-                        <ModalHeader className="flex items-center gap-1 bg-blue-600 text-white">
+                        <ModalHeader className="flex items-center gap-1 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 border border-blue-600 text-white">
                            <RiUserAddLine size={24} />Thêm người dùng mới
                         </ModalHeader>
                         <Divider />

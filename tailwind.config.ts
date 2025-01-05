@@ -98,7 +98,7 @@ const config: Config = {
         fadeinbouncedown: 'fade-in-bouncedown 1s ease-in-out 0.25s 1',
         fadeinup: 'fade-in-up 1s ease-in-out 0.25s 1',
         fadeoutdown: 'fade-out-down 1s ease-in-out 0.25s 1',
-        bounceupdown: 'bounce-up-down 0.75s ease-in-out 0.25s infinite',
+        bounceupdown: 'bounce-up-down 1.25s ease-in-out 0.25s infinite',
         shake: 'shake 0.6s ease-in-out 0.25s 1',
       }
     },

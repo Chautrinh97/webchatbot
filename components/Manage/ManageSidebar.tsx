@@ -10,12 +10,12 @@ import { useUserStore } from "@/app/store/user.store";
 import { UserPermissionConstant, UserRoleConstant } from "@/utils/constant";
 import { usePathname } from "next/navigation";
 
-export const ManageSidebar = ({ user }: { user: any }) => {
+export const ManageSidebar = () => {
    const { state: { isSidebarOpen }, dispatch } = useAppStore();
    const handleToggleSidebar = () => {
       dispatch("isSidebarOpen", !isSidebarOpen);
    }
-   // const { user } = useUserStore();
+   const { user } = useUserStore();
    const hasPermission = (permissionTag: string) => {
       return user.permissions.some((permission: any) => permission === permissionTag);
    }
@@ -30,7 +30,7 @@ export const ManageSidebar = ({ user }: { user: any }) => {
             <div className={`${!isSidebarOpen && 'hidden'} h-full pb-4 overflow-x-hidden`}>
                <ul className="space-y-2 font-medium">
                   <li>
-                     <div className="mt-1 mb-2 py-2 ps-4 uppercase shadow-md bg-blue-600 text-white">Quản lý văn bản</div>
+                     <div className="mt-1 mb-2 py-2 ps-4 uppercase shadow-md bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 border border-gray-200 dark:border-blue-600  text-white">Quản lý văn bản</div>
                      <ul className="space-y-2">
                         <li>
                            <Link href="/manage/issuing-body"
@@ -64,18 +64,22 @@ export const ManageSidebar = ({ user }: { user: any }) => {
                               <span className="ms-3">Văn bản</span>
                            </Link>
                         </li>
-                        <li>
-                           <Link href="/manage/document-statistic" className={`flex items-center px-3 py-2  group 
+
+                        {(hasPermission(UserPermissionConstant.MANAGE_ALL_DOCUMENTS) ||
+                           hasPermission(UserPermissionConstant.MANAGE_OWN_DOCUMENTS)) &&
+                           <li>
+                              <Link href="/manage/document-statistic" className={`flex items-center px-3 py-2  group 
                         ${isActive("/manage/document-statistic") ? "bg-gray-300 dark:bg-neutral-700" : "text-gray-900 dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700"}`}>
-                              <IoIosStats size={24} />
-                              <span className="ms-3">Thống kê văn bản</span>
-                           </Link>
-                        </li>
+                                 <IoIosStats size={24} />
+                                 <span className="ms-3">Thống kê văn bản</span>
+                              </Link>
+                           </li>
+                        }
                      </ul>
                   </li>
-                  {(hasPermission(UserPermissionConstant.VIEW_STATISTIC_CHATBOT || hasPermission(UserPermissionConstant.MANAGE_USERS))) &&
+                  {hasPermission(UserPermissionConstant.MANAGE_USERS) &&
                      <li>
-                        <div className="mb-2 mt-2 py-2 ps-4 uppercase shadow-md bg-blue-600 text-white">Hệ thống</div>
+                        <div className="mb-2 mt-2 py-2 ps-4 uppercase shadow-md bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 border border-gray-200 dark:border-blue-600  text-white">Quản lý hệ thống</div>
                         <ul className="space-y-2">
                            < li >
                               <Link href="/manage/user"
@@ -95,12 +99,6 @@ export const ManageSidebar = ({ user }: { user: any }) => {
                                  </Link>
                               </li>
                            }
-                           <li>
-                              <Link href="#" className="flex items-center px-3 py-2 text-gray-900  dark:text-white hover:bg-gray-300 dark:hover:bg-neutral-700 group">
-                                 <FaRobot size={24} />
-                                 <span className="ms-3">Thống kê truy vấn</span>
-                              </Link>
-                           </li>
                         </ul>
                      </li>
                   }

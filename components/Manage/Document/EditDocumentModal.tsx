@@ -6,7 +6,6 @@ import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { basicToast, errorToast, successToast } from "@/utils/toast";
 import { MdEditDocument } from "react-icons/md";
-import DocViewer, { DocViewerRenderers } from "@cyntler/react-doc-viewer";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import {
    Button,
@@ -19,11 +18,11 @@ import {
    Divider,
    Tooltip,
 } from "@nextui-org/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DocumentProperty } from "@/types/chat";
 import { useRouter } from "next/navigation";
 import { StatusCodes } from "http-status-codes";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type EditDocumentForm = z.TypeOf<typeof DocumentFormSchema>;
 export const EditDocumentModal = ({ id }: { id: number }) => {
@@ -105,33 +104,33 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
    }
 
    const onSubmit: SubmitHandler<EditDocumentForm> = async (data) => {
-      const { file, ...santizedData } = data;
+      const { files, ...santizedData } = data;
       let formData = {};
       try {
          const formFile = new FormData();
          let key = undefined;
-         if (file?.[0]) {
-            const maxSize = file?.[0].type === "application/pdf" ? 5 * 1024 * 1024 : 200 * 1024;
-            if (file?.[0].size > maxSize) {
-               setError("file", {
-                  message: file?.[0].type === "application/pdf"
+         if (files?.[0]) {
+            const maxSize = files?.[0].type === "application/pdf" ? 5 * 1024 * 1024 : 200 * 1024;
+            if (files?.[0].size > maxSize) {
+               setError("files", {
+                  message: files?.[0].type === "application/pdf"
                      ? "Kích thước file PDF không được vượt quá 5MB."
                      : "Kích thước file Word không được vượt quá 200KB."
                });
                return;
             }
-            formFile.append('file', file?.[0]);
+            formFile.append('file', files?.[0]);
             const responseUpload = await apiServiceClient.post(`/document/upload`, formFile);
             if (responseUpload.status !== StatusCodes.OK) {
                errorToast('Có lỗi trong quá trình upload văn bản. Vui lòng thử lại sau');
                onClose();
                return;
-            }  
+            }
             key = (await responseUpload.json()).key;
             formData = {
                ...santizedData,
-               mimeType: file?.[0].type,
-               documentSize: file?.[0].size,
+               mimeType: files?.[0].type,
+               documentSize: files?.[0].size,
                key: key,
             };
          }
@@ -170,7 +169,7 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
    }
 
    const handleSelectedFile = (e: any) => {
-      clearErrors('file');
+      clearErrors('files');
       if (e.target.files && e.target.files.length > 0) {
          setFiles(Array.from(e.target.files));
       }
@@ -202,7 +201,7 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
          </button>
       </Tooltip>
          <Modal
-            size="4xl"
+            size="full"
             backdrop="blur"
             isOpen={isOpen}
             onClose={onClose}
@@ -214,7 +213,7 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
                   return (
                      <>
                         <form onSubmit={handleSubmit(onSubmit)}>
-                           <ModalHeader className="flex items-center gap-2 bg-blue-600 text-white">
+                           <ModalHeader className="flex items-center gap-2 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 text-white">
                               <MdEditDocument size={24} /> Cập nhật văn bản
                            </ModalHeader>
                            <Divider />
@@ -420,24 +419,16 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
                                        <input className="block w-full text-xs text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
                                           type="file"
                                           accept=".doc,.docx,.pdf"
-                                          {...register('file')}
+                                          {...register('files')}
                                           onChange={(e) => handleSelectedFile(e)}
                                        />
                                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-300" id="file_input_help">Word (Tối đa 200KB), PDF (Tối đa 5MB).</p>
-                                       {errors.file?.message &&
+                                       {errors.files?.message &&
                                           <div className="ps-2 flex text-[11px] text-red-600 py-2">
-                                             <TbAlertCircle className="me-1" /> {errors.file?.message.toString()}
+                                             <TbAlertCircle className="me-1" /> {errors.files?.message.toString()}
                                           </div>}
                                     </div>
                                  </div>
-                                 {isPreview &&
-                                    <div className="col-span-2 pt-3 px-2 pb-2 mx-2 border rounded-md w-full h-[500px]">
-                                       <DocViewer documents={files.map((file: any) => ({
-                                          uri: window.URL.createObjectURL(file),
-                                          fileName: file.name,
-                                       }))} pluginRenderers={DocViewerRenderers} />
-                                    </div>
-                                 }
                               </div>
                            </ModalBody>
                            <Divider />

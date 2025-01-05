@@ -18,7 +18,7 @@ import {
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { MdAdd } from "react-icons/md";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type AddAuthorityGroupForm = z.TypeOf<typeof AuthorityGroupSchema>;
 export const AddAuthorityGroupModal = () => {
@@ -69,7 +69,7 @@ export const AddAuthorityGroupModal = () => {
                {(onClose) => (
                   <>
                      <form onSubmit={handleSubmit(onSubmit)}>
-                        <ModalHeader className="flex items-center gap-1 bg-blue-600 text-white">
+                        <ModalHeader className="flex items-center gap-1 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 text-white">
                            <MdAdd size={24} />Thêm nhóm quyền mới
                         </ModalHeader>
                         <Divider />

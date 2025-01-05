@@ -97,7 +97,7 @@ export const EditAuthorityGroupModal = ({ id, isDisabled }: { id: number | undef
                {(onClose) => (
                   <>
                      <form onSubmit={handleSubmit(onSubmit)}>
-                        <ModalHeader className="flex items-center gap-1 bg-blue-600 text-white">
+                        <ModalHeader className="flex items-center gap-1 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 text-white">
                            <MdEdit size={24} />Cập nhật nhóm quyền
                         </ModalHeader>
                         <Divider />

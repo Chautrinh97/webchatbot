@@ -31,5 +31,5 @@ export const getSyncStatus = (syncStatus: string) => {
       return "Đang chờ đồng bộ"
    else if (syncStatus === SyncStatus.SYNC)
       return "Đã đồng bộ"
-   else return "Đồng bộ thất bại";
+   else return "Đồng bộ lại thất bại";
 }

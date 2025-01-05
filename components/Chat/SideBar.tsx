@@ -12,11 +12,13 @@ import { useEffect, useRef, useState } from 'react';
 import { SidebarOptionButton } from './SidebarOptionButton';
 import { Divider, Tooltip } from '@nextui-org/react';
 import { ConversationItem } from '@/types/chat';
-import { apiService, apiServiceClient } from '@/app/apiService/apiService';
+import { apiServiceClient } from '@/app/apiService/apiService';
 import { StatusCodes } from 'http-status-codes';
-import { errorToast } from '@/utils/toast';
+import { errorToast, warnToast } from '@/utils/toast';
 import { useRouter } from 'next/navigation';
 import { ConversationComponent } from './ConversationComponent';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 export const SideBar = (
    // {conversations} : {conversations: ConversationItem[]}
@@ -25,7 +27,12 @@ export const SideBar = (
    const [refetch, setRefetch] = useState<boolean>(false);
    const router = useRouter();
    const {
-      state: { isSidebarOpen, conversations },
+      state: {
+         isSidebarOpen,
+         conversations,
+         selectedConversation,
+         messageIsStreaming,
+      },
       dispatch,
    } = useAppStore();
 
@@ -40,12 +47,14 @@ export const SideBar = (
       dispatch('conversations', conversations);
    }
 
-   useEffect(()=> {
+   useEffect(() => {
       fetchConversation();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, [refetch]);
 
    useEffect(() => {
       fetchConversation();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
    }, []);
 
    const handleNewConversation = async () => {
@@ -69,8 +78,75 @@ export const SideBar = (
       dispatch('isSidebarOpen', !isSidebarOpen);
    };
 
-   const handleExportFile = () => {
+   const handleExportFile = async () => {
+      if (selectedConversation.messages.length === 0) {
+         warnToast('Đoạn hội thoại này không có nội dung nào');
+         return;
+      }
+      const element = document.querySelector('#conversation-export') as HTMLElement;
+      if (!element) return;
 
+      const rect = element.getBoundingClientRect();
+
+      const canvas = await html2canvas(element, {
+         scale: 1,
+         scrollX: 0,
+         scrollY: -(rect.top + window.scrollY),
+         windowWidth: element.scrollWidth,
+         windowHeight: element.scrollHeight,
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+
+      const marginLeft = 10;
+      const marginRight = 15;
+      const pdf = new jsPDF({
+         orientation: 'portrait',
+         unit: 'pt',
+         format: 'a4',
+      });
+      const pdfWidth = pdf.internal.pageSize.getWidth() - marginLeft - marginRight;
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      const imgProps = pdf.getImageProperties(imgData);
+
+      const imgWidth = imgProps.width;
+      const imgHeight = imgProps.height;
+
+      let heightLeft = imgHeight;
+
+      while (heightLeft > 0) {
+         const currentHeight = Math.min(heightLeft, pdfHeight);
+
+         const canvasPart = document.createElement('canvas');
+         const ctx = canvasPart.getContext('2d');
+         canvasPart.width = imgProps.width;
+         canvasPart.height = currentHeight;
+
+         ctx?.drawImage(
+            canvas,
+            0, //x pos to start cut
+            imgHeight - heightLeft, // y pos to start cut
+            imgWidth, // x range to cut
+            currentHeight, // y range to cut
+            0, // new x pos
+            0, // new y pos
+            imgWidth, // new x range
+            currentHeight // new y range
+         );
+
+         const imgPartData = canvasPart.toDataURL('image/png');
+
+         pdf.addImage(imgPartData, 'PNG', marginLeft, 0, pdfWidth, currentHeight);
+         heightLeft -= currentHeight;
+         if (heightLeft > 0) {
+            pdf.addPage();
+         }
+      }
+
+
+      const title = selectedConversation.title || 'conversation-data';
+      pdf.save(`${title}.pdf`);
    }
 
    useEffect(() => {
@@ -104,34 +180,33 @@ export const SideBar = (
             ${isSidebarOpen ? 'w-[280px] z-20 border-r-1 dark:border-neutral-700' : 'z-10 w-0'}`}>
             {isSidebarOpen && (
                <div className="h-full flex flex-col overflow-x-hidden px-2 space-y-2">
-                  <div className="flex flex-col">
-                     <Tooltip content='Đóng' placement='right'>
+                  <div className="flex justify-between border-b border-neutral-300 dark:border-neutral-700">
+                     <Tooltip content='Đóng' placement='bottom'>
                         <button
-                           className="flex justify-center mt-2 items-center h-7 w-7 sm:h-8 sm:w-8 rounded-md text-neutral-400 hover:text-black hover:bg-gray-300 dark:text-neutral-500 dark:hover:text-white dark:hover:bg-neutral-700"
+                           className="flex justify-center mt-3 items-center h-7 w-7 sm:h-8 sm:w-8 rounded-md text-neutral-400 hover:text-black hover:bg-gray-300 dark:text-neutral-500 dark:hover:text-white dark:hover:bg-neutral-700"
                            onClick={handleToggleSidebar}
                         >
                            <TbArrowBarLeft size={21} />
                         </button>
                      </Tooltip>
-                  </div>
-                  <button
-                     onClick={handleNewConversation}
-                     className="relative flex cursor-pointer select-none items-center gap-3 rounded-md p-3 mb-4
+                     <button
+                        onClick={handleNewConversation}
+                        className="relative grow flex cursor-pointer select-none items-center gap-3 rounded-md p-3 my-2 ms-1
                      transition-colors duration-200 hover:bg-gray-300 dark:hover:bg-neutral-700">
-                     <TbMessagePlus size={18} /> Đoạn hội thoại mới
-                     <TbPlus size={18} className="absolute right-3" />
-                  </button>
-                  <Divider />
+                        <TbMessagePlus size={18} /> Đoạn hội thoại mới
+                        <TbPlus size={18} className="absolute right-3" />
+                     </button>
+                  </div>
                   <div className="flex-grow overflow-auto">
                      {conversations?.length > 0 ? (
                         <div
                            className="pt-1"
                         >
                            {conversations.map((conversation) => (
-                              <ConversationComponent 
-                              key={conversation.id} 
-                              conversation={conversation}
-                              refetch={() => setRefetch(!refetch)} />
+                              <ConversationComponent
+                                 key={conversation.id}
+                                 conversation={conversation}
+                                 refetch={() => setRefetch(!refetch)} />
                            ))}
                         </div>
                      ) :
@@ -147,6 +222,7 @@ export const SideBar = (
                   < div className="flex flex-col items-center space-y-1 border-t border-neutral-300 dark:border-neutral-600 pt-1 text-sm">
                      <button
                         className="flex w-full cursor-pointer select-none items-center gap-3 rounded-md py-3 px-3 text-[14px] leading-3 text-black dark:text-white transition-colors duration-200 hover:bg-gray-300 dark:hover:bg-neutral-700"
+                        disabled={messageIsStreaming}
                         onClick={handleExportFile}
                      >
                         <div><TbFileExport size={18} /></div>
@@ -166,7 +242,7 @@ export const SideBar = (
          {!isSidebarOpen && (
             <Tooltip content='Mở' placement='right'>
                <button
-                  className="fixed flex justify-center items-center top-3 left-2 z-50 h-7 w-7 rounded-md hover:bg-gray-300 text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white dark:hover:bg-neutral-700 sm:top-2 sm:left-2 sm:h-8 sm:w-8 "
+                  className="fixed flex justify-center items-center top-6 left-2 z-50 h-7 w-7 rounded-md hover:bg-gray-300 text-neutral-400 hover:text-black dark:text-neutral-500 dark:hover:text-white dark:hover:bg-neutral-700 sm:top-2 sm:left-2 sm:h-8 sm:w-8 "
                   onClick={handleToggleSidebar}
                   title="Mở"
                >

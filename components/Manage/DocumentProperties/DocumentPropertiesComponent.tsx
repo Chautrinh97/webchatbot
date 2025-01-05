@@ -20,7 +20,7 @@ export const DocumentPropertiesComponent = (
 ) => {
    return (
       <>
-         <div className="py-2 bg-blue-600 border border-gray-200 dark:border-neutral-500 text-white text-center font-medium text-[17px] uppercase rounded-t">
+         <div className="py-2 bg-gradient-to-r from-blue-700 via-blue-500 to-blue-700 border border-gray-200 dark:border-blue-600  text-white text-center font-medium text-[17px] uppercase rounded-t">
             Danh sách {propertyText}
          </div>
          <div className="w-full inline-block align-middle">

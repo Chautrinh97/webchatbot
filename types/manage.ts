@@ -26,6 +26,10 @@ export type Permission = {
    description: string,
 }
 
+export type CreatedUser = {
+   id: number,
+   fullName: string,
+}
 export type DocumentItem = {
    id: number,
    title: string,
@@ -42,7 +46,9 @@ export type DocumentItem = {
    invalidDate: Date | null,
    isRegulatory: boolean,
    mimeType: string,
-   syncStatus: "NOT_SYNC" | "SYNC" | "PENDING_SYNC" | "FAILED_SYNC"
+   syncStatus: "NOT_SYNC" | "SYNC" | "PENDING_SYNC" | "FAILED_SYNC",
+   user: CreatedUser | null,
+   createdAt: Date,
 }
 
 export type StatsData = {

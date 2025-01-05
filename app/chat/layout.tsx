@@ -30,15 +30,6 @@ const ChatLayout = async ({ children }: { children: React.ReactNode }) => {
       });
       const data = await response.json();
       user = mapUserResponse(data.user);
-      /* const conversationResponse = await apiService.get('/conversation', {}, {
-         Authorization: `Bearer ${token}`,
-      });
-      const conversationData = await conversationResponse.json(); 
-      conversations = conversationData.data.map((conv: any) => ({
-         id: conv.id,
-         title: conv.title,
-         slug: conv.slug,
-      })); */
    } catch {
       return (
          <div className="flex flex-col items-center justify-center mt-24 gap-3">
