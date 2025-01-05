@@ -18,7 +18,7 @@ import {
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { MdEdit } from "react-icons/md";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type EditAuthorityGroupForm = z.TypeOf<typeof AuthorityGroupSchema>;
 export const EditAuthorityGroupModal = ({ id, isDisabled }: { id: number | undefined, isDisabled: boolean }) => {

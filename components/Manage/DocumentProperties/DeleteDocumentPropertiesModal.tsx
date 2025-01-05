@@ -15,7 +15,7 @@ import {
 } from "@nextui-org/react";
 import { TbTrash } from "react-icons/tb";
 import { useRouter } from "next/navigation";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 export const DeleteDocumentPropertiesModal = (
    { id, propertyAPIURI, propertyText }:

@@ -20,7 +20,7 @@ import {
 import { UseDisclosureReturn } from "@nextui-org/use-disclosure";
 import { useRouter } from "next/navigation";
 import { MdOutlinePassword } from "react-icons/md";
-import { apiService } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type ChangePasswordForm = z.TypeOf<typeof ChangePasswordSchemas>;
 export const ManageAccountModal = ({ disClosure, user }: { disClosure: UseDisclosureReturn, user: any }) => {
@@ -39,7 +39,7 @@ export const ManageAccountModal = ({ disClosure, user }: { disClosure: UseDisclo
    const onSubmit: SubmitHandler<ChangePasswordForm> = async (data) => {
       const { confirmPassword, ...formData } = data;
       try {
-         const response = await apiService.put(`/user/me`, formData);
+         const response = await apiServiceClient.put(`/user/me`, formData);
          if (response.status === StatusCodes.CONFLICT) {
             setError("oldPassword", { message: "Mật khẩu cũ không chính xác." });
             return;

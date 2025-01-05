@@ -19,7 +19,7 @@ import {
    Tooltip,
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type EditDocumentPropertiesForm = z.TypeOf<typeof DocumentPropertiesSchema>;
 export const EditDocumentPropertiesModal = (

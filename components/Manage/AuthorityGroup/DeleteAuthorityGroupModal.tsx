@@ -13,7 +13,7 @@ import {
 } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { MdDelete } from "react-icons/md";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 export const DeleteAuthorityGroupModal = ({ id, isDisabled }: { id: number | undefined, isDisabled: boolean}) => {
    const router = useRouter();

@@ -15,7 +15,7 @@ import {
 import { TbTrash } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { HiOutlineUserRemove } from "react-icons/hi";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 
 export const DeleteUserModal = ({ id }: { id: number }) => {

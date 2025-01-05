@@ -2,14 +2,14 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm } from 'react-hook-form'
 import Link from "next/link";
-import { TbAlertCircle, TbMessageChatbot } from "react-icons/tb";
+import { TbAlertCircle } from "react-icons/tb";
 import { z } from "zod";
 import { errorToast, promiseToast } from "@/utils/toast";
 import { StatusCodes } from "http-status-codes";
 import { useRef, useState } from "react";
 import { EmailIcon } from "@/app/assets/email";
 import { ForgotPasswordSchema } from "@/types/validation";
-import { apiService } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type ForgotPasswordForm = z.TypeOf<typeof ForgotPasswordSchema>;
 export const ForgotPasswordComponent = () => {
@@ -27,7 +27,7 @@ export const ForgotPasswordComponent = () => {
 
    const onSubmit: SubmitHandler<ForgotPasswordForm> = async (data: ForgotPasswordForm) => {
       try {
-         const response = await promiseToast(apiService.post('/auth/forgot-password', data), 'Đang xử lý...');
+         const response = await promiseToast(apiServiceClient.post('/auth/forgot-password', data), 'Đang xử lý...');
 
          if (response.status === StatusCodes.NOT_FOUND) {
             setError('email', { message: 'Email không tồn tại.' });

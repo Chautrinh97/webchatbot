@@ -21,7 +21,7 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/app/store/user.store";
 import { UserPermissionConstant } from "@/utils/constant";
 import { useState } from "react";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type AddDocumentPropertiesForm = z.TypeOf<typeof DocumentPropertiesSchema>;
 export const AddDocumentPropertiesModal = (

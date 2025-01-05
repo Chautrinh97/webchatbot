@@ -10,7 +10,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { errorToast, successToast } from "@/utils/toast";
 import { useAppStore } from "@/app/store/app.store";
 import { LoginConstantMessage } from "@/utils/constant";
-import {apiService} from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type LoginFormData = z.TypeOf<typeof LoginFormSchema>;
 
@@ -31,7 +31,7 @@ export const LoginComponent = () => {
       if (isLoading) return;
       dispatch("isLoading", true);
       try {
-         const response = await apiService.post('/auth/login', data);
+         const response = await apiServiceClient.post('/auth/login', data);
          if (response.status === StatusCodes.NOT_FOUND) {
             setError("email", { message: "Email không tồn tại." });
             return;

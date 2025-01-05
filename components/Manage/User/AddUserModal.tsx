@@ -21,7 +21,7 @@ import { useState } from "react";
 import { AuthorityGroup } from "@/types/manage";
 import { useRouter } from "next/navigation";
 import { UserRoleConstant } from "@/utils/constant";
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 import { useUserStore } from "@/app/store/user.store";
 
 type AddUserForm = z.TypeOf<typeof AddUserFormSchema>;

@@ -6,7 +6,7 @@ import { TbCheck } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import { AiOutlineLoading } from "react-icons/ai";
 import { useAppStore } from "@/app/store/app.store";
-import {apiService} from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 export const ConfirmEmailComponent = () => {
    const { state: { isLoading } } = useAppStore();
@@ -40,7 +40,7 @@ export const ConfirmEmailComponent = () => {
 
    const handleResendEmail = async (e: any) => {
       try {
-         const response = await apiService.post(
+         const response = await apiServiceClient.post(
             '/auth/send-confirm-email', {
             email: email,
          });

@@ -7,7 +7,7 @@ import { z } from "zod";
 import { StatusCodes } from "http-status-codes";
 import { errorToast, promiseToast, successToast } from "@/utils/toast";
 import { useRouter, useSearchParams } from "next/navigation";
-import { apiService } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 
 type ResetPasswordFormData = z.TypeOf<typeof ResetPasswordSchema>;
 
@@ -24,7 +24,7 @@ export const ResetPasswordComponent = () => {
 
    const onSubmit: SubmitHandler<ResetPasswordFormData> = async (data: ResetPasswordFormData) => {
       try {
-         const response = await promiseToast(apiService.post(
+         const response = await promiseToast(apiServiceClient.post(
             '/auth/reset-password', {
             ...data,
             token: searchParams.get('reset-from'),

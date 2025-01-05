@@ -1,5 +1,5 @@
 'use client'
-import { apiService, apiServiceClient } from "@/app/apiService/apiService";
+import { apiServiceClient } from "@/app/apiService/apiService";
 import { errorToast, errorToastUp, successToast } from "@/utils/toast";
 import { Tooltip } from "@nextui-org/react";
 import { StatusCodes } from "http-status-codes";

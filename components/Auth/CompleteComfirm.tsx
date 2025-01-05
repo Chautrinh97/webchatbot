@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { StatusCodes } from 'http-status-codes';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { basicToast } from '@/utils/toast';
-import {apiService} from '@/app/apiService/apiService';
+import { apiServiceClient} from '@/app/apiService/apiService';
 
 export function CompleteConfirmComponent() {
    const searchParams = useSearchParams();
@@ -14,7 +14,7 @@ export function CompleteConfirmComponent() {
    useEffect(() => {
       const confirmEmail = async () => {
          try {
-            const response = await apiService.post(
+            const response = await apiServiceClient.post(
                '/auth/confirm-email', {
                token: verifyToken,
             });
