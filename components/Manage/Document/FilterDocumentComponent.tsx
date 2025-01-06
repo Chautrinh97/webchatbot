@@ -114,7 +114,7 @@ export const FilterDocumentComponent = (
                className="border border-gray-300 rounded-md dark:bg-neutral-700 focus:ring-blue-500 focus:border-blue-500 block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500">
                <option value="">Tất cả </option>
                <option value="true">Văn bản pháp quy </option>
-               <option value="false">Văn bản thông thường </option>
+               <option value="false">Tài liệu thông thường </option>
             </select>
          </div>
 

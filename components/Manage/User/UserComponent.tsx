@@ -21,7 +21,7 @@ export const UserComponent = ({ users, pageNumber, pageLimit }: { users: UserIte
                         <th scope="col" className="px-3 py-3 text-start font-medium uppercase">Vai trò</th>
                         <th scope="col" className="px-3 py-3 text-start font-medium uppercase">Nhóm quyền</th>
                         <th scope="col" className="px-3 py-3 text-center font-medium uppercase">Mô tả quyền</th>
-                        <th scope="col" className="px-3 py-3 text-start font-medium uppercase w-32">Email đã xác minh?</th>
+                        <th scope="col" className="px-3 py-3 text-start font-medium uppercase w-32">Tình trạng Email</th>
                         <th scope="col" className="px-3 py-3 text-start font-medium uppercase w-28">Trạng thái tài khoản</th>
                         <th scope="col" className="px-3 py-3 text-start font-medium uppercase w-2">Tác vụ</th>
                      </tr>
