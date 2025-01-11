@@ -8,16 +8,21 @@ import { UserPermissionConstant } from "@/utils/constant";
 import { validateSearchParams } from "@/utils/string";
 import { StatusCodes } from "http-status-codes";
 import { Metadata } from "next";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Loading } from "@/components/Others/Loading";
 import { apiService } from "@/app/apiService/apiService";
 import { getAccessToken } from "@/app/apiService/cookies";
 import { getPermissions } from "@/utils/access-utils";
+import { RoleFilterComponent } from "@/components/Manage/User/RoleFilterComponent";
 
 export const metadata: Metadata = {
    title: 'Người dùng',
+}
+
+const validateRoleParam = (params: any) => {
+   const { role } = params;
+   return ['guest', 'officer'].includes(role) ? role : undefined;
 }
 
 export default async function UserPage(props: { searchParams: Promise<any> }) {
@@ -29,11 +34,12 @@ export default async function UserPage(props: { searchParams: Promise<any> }) {
 
    const { searchKey = '' } = searchParams;
    const { pageLimit, pageNumber } = validateSearchParams(searchParams);
+   const role = validateRoleParam(searchParams);
 
    try {
       const token = await getAccessToken();
       const response = await apiService.get(`/user`, {
-         searchKey, pageLimit, pageNumber,
+         searchKey, pageLimit, pageNumber, role
       }, {
          Authorization: `Bearer ${token}`,
       });
@@ -65,6 +71,7 @@ export default async function UserPage(props: { searchParams: Promise<any> }) {
                   <div className="flex gap-x-5 justify-start items-center">
                      <PageLimitComponent pageLimit={pageLimit} pageURI="/manage/user" />
                      <SearchBarComponent pageURI="/manage/user" initialSearch={searchKey} />
+                     <RoleFilterComponent role={role || ''} />
                   </div>
                   <AddUserModal />
                </div>
