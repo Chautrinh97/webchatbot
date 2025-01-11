@@ -60,8 +60,6 @@ const NonSaveChatErea = () => {
             };
             dispatch("selectedConversation", updatedConversation);
 
-            dispatch("isLoading", false);
-
             webSocket.send(JSON.stringify({
                question: message.content,
             }));
@@ -70,6 +68,7 @@ const NonSaveChatErea = () => {
                const response = event.data;
                chunks += response;
                if (first) {
+                  dispatch('isLoading', false);
                   first = false;
                   updatedConversation.messages.push({
                      content: response,

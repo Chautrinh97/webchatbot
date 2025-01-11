@@ -79,8 +79,6 @@ const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
             };
             dispatch("selectedConversation", updatedConversation);
 
-            dispatch("isLoading", false);
-
             webSocket.send(JSON.stringify({
                question: message.content,
                conversation_id: selectedConversation.id,
@@ -90,6 +88,7 @@ const ChatArea = ({ conversationSlug }: { conversationSlug: string }) => {
                const response = event.data;
                chunks += response;
                if (first) {
+                  dispatch("isLoading", false);
                   first = false;
                   updatedConversation.messages.push({
                      content: response,
