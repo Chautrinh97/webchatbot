@@ -109,7 +109,7 @@ export const AddDocumentModal = () => {
          if (files?.[0].size > maxSize) {
             setError("files", {
                message: files?.[0].type === "application/pdf"
-                  ? "Kích thước file PDF không được vượt quá 5MB."
+                  ? "Kích thước file PDF không được vượt quá 10MB."
                   : "Kích thước file Word không được vượt quá 200KB."
             });
             return;
