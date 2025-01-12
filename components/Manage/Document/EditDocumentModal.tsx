@@ -116,7 +116,7 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
          const formFile = new FormData();
          let key = undefined;
          if (files?.[0]) {
-            const maxSize = files?.[0].type === "application/pdf" ? 5 * 1024 * 1024 : 200 * 1024;
+            const maxSize = files?.[0].type === "application/pdf" ? 10 * 1024 * 1024 : 200 * 1024;
             if (files?.[0].size > maxSize) {
                setError("files", {
                   message: files?.[0].type === "application/pdf"

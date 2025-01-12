@@ -105,7 +105,7 @@ export const AddDocumentModal = () => {
                return;
             }
          }
-         const maxSize = files?.[0].type === "application/pdf" ? 5 * 1024 * 1024 : 200 * 1024;
+         const maxSize = files?.[0].type === "application/pdf" ? 10 * 1024 * 1024 : 200 * 1024;
          if (files?.[0].size > maxSize) {
             setError("files", {
                message: files?.[0].type === "application/pdf"
