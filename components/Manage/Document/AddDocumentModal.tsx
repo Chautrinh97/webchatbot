@@ -5,7 +5,7 @@ import { TiDocumentAdd } from "react-icons/ti";
 import { DocumentFormSchema } from "@/types/validation";
 import { z } from 'zod';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { errorToast, successToast } from "@/utils/toast";
+import { basicToast, errorToast, successToast } from "@/utils/toast";
 import {
    Button,
    Modal,
@@ -153,8 +153,10 @@ export const AddDocumentModal = () => {
             router.refresh();
             return;
          }
-
-         successToast('Thêm thành công.');
+         if (isSyncAction) 
+            basicToast('Văn bản đã được thêm đang đồng bộ. Vui lòng đợi');
+         else 
+            successToast('Thêm thành công');
          setIsSubmitSuccessful(true);
          onClose();
          router.refresh();

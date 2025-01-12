@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import {
-  Inter,
+  Open_Sans,
 } from "next/font/google";
 import "./global.css";
 import ToastProvider from "./providers/ToastProvider";
 import { NextUI } from "./providers/NextUIProvider";
 import { ThemeProvider } from "./providers/ThemeProvider";
 
-const inter = Inter({
+const inter = Open_Sans({
   subsets: ["vietnamese"],
   weight: "500",
   display: "swap"

@@ -44,11 +44,6 @@ export const SyncActionButton = ({ id, syncStatus }: { id: number, syncStatus: s
             onClose();
             router.refresh();
             return;
-         } else if (response.status === StatusCodes.BAD_REQUEST) {
-            errorToast('Văn bản đã được hủy đồng bộ trước đây. Đang làm mới...');
-            onClose();
-            router.refresh();
-            return;
          }
          onClose();
          successToast('Văn bản đã được hủy đồng bộ.');
