@@ -30,5 +30,6 @@ export type Folder = {
 export type DocumentProperty = {
   id: number;
   name: string;
+  acronym: string;
   description: string;
 }

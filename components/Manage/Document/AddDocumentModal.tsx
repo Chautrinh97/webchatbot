@@ -49,6 +49,7 @@ export const AddDocumentModal = () => {
       watch,
       clearErrors,
       setError,
+      setValue,
       formState: { errors },
    } = useForm<AddDocumentForm>({
       resolver: zodResolver(DocumentFormSchema),
@@ -62,6 +63,24 @@ export const AddDocumentModal = () => {
    const hasPermission = user.permissions?.some((permission) =>
       permission === UserPermissionConstant.MANAGE_ALL_DOCUMENTS ||
       permission === UserPermissionConstant.MANAGE_OWN_DOCUMENTS);
+
+   const documentType = watch('documentType');
+   const issuingBody = watch('issuingBody');
+   const documentField = watch('documentField');
+
+   const generateReferenceNumber = () => {
+      const typeAcronym = documentTypes.find((t) => t.id == documentType)?.acronym || '';
+      const issuingBodyAcronym = issuingBodies.find((ib) => ib.id == issuingBody)?.acronym || '';
+      const fieldAcronym = documentFields.find((f) => f.id == documentField)?.acronym || '';
+      const parts = [typeAcronym, issuingBodyAcronym, fieldAcronym].filter((part) => part != '');
+      return `${parts.join('-')}`;
+   };
+
+   useEffect(() => {
+      const refNumber = generateReferenceNumber();
+      setValue('referenceNumber', refNumber);
+   // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [documentType, issuingBody]);
 
    const handleOpenModal = async () => {
       try {
@@ -153,9 +172,9 @@ export const AddDocumentModal = () => {
             router.refresh();
             return;
          }
-         if (isSyncAction) 
+         if (isSyncAction)
             basicToast('Văn bản đã được thêm đang đồng bộ. Vui lòng đợi');
-         else 
+         else
             successToast('Thêm thành công');
          setIsSubmitSuccessful(true);
          onClose();
@@ -188,7 +207,7 @@ export const AddDocumentModal = () => {
 
    const handleTogglePreview = async () => {
       if (!file) {
-         setError('files', {message: 'Vui lòng chọn tệp để xem trước'});
+         setError('files', { message: 'Vui lòng chọn tệp để xem trước' });
          return;
       }
       if (!isPreview) {
@@ -479,11 +498,11 @@ export const AddDocumentModal = () => {
                               < div
                                  ref={wordPreview}
                                  className="w-[700px] absolute right-5 h-[600px] overflow-auto px-4 mx-2 border rounded-md">
-                                    {file.type === MimeType.PDF &&
-                                       <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-                                          <Viewer fileUrl={url} />;
-                                       </Worker>
-                                    }
+                                 {file.type === MimeType.PDF &&
+                                    <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                                       <Viewer fileUrl={url} />;
+                                    </Worker>
+                                 }
                               </div>
                            }
                         </ModalBody >

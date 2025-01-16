@@ -17,6 +17,8 @@ export const FilterDocumentComponent = (
       isRegulatory,
       isValid,
       isSync,
+      year,
+      issuanceYears,
    }:
       {
          pageLimit: number,
@@ -30,6 +32,8 @@ export const FilterDocumentComponent = (
          isRegulatory: string,
          isValid: string,
          isSync: string,
+         year: number,
+         issuanceYears: number[],
       }
 ) => {
    const router = useRouter();
@@ -82,6 +86,15 @@ export const FilterDocumentComponent = (
       params.delete("searchKey");
       router.push(`/manage/document?${params.toString()}`);
    };
+   const handleChangeYear = (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const params = new URLSearchParams(searchParams as any);
+      const selectedYear = parseInt(e.target.value, 10);
+      if (selectedYear === 0) params.delete('year');
+      else params.set("year", e.target.value);
+      params.delete("pageNumber");
+      params.delete("searchKey");
+      router.push(`/manage/document?${params.toString()}`);
+   };
    return (
       <div className="grid grid-cols-10 gap-y-4 ">
          <div className="col-span-2 flex items-center">
@@ -89,6 +102,25 @@ export const FilterDocumentComponent = (
          </div>
          <div className="col-span-3">
             <SearchBarComponent pageURI="/manage/document" initialSearch={searchKey} />
+         </div>
+         <div className="col-span-2 col-start-7 flex items-center justify-end pe-3">
+            Năm ban hành
+         </div>
+         <div className="col-span-1 flex items-center">
+            <select
+               onChange={(e) => handleChangeYear(e)}
+               value={year}
+               className="border border-gray-300 rounded-md dark:bg-neutral-700 focus:ring-blue-500 focus:border-blue-500 block w-full p-1 dark:placeholder-gray-400 dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            >
+               <option value={0}>
+                  Tất cả
+               </option>
+               {issuanceYears.map((y) => (
+                  <option key={y} value={y}>
+                     {y}
+                  </option>
+               ))}
+            </select>
          </div>
          <div className="col-start-1 col-span-2 text-end pe-3">Lĩnh vực</div>
          <div className="col-span-3">

@@ -14,7 +14,6 @@ import {
    ModalHeader,
    ModalBody,
    ModalFooter,
-   useDisclosure,
    Divider,
 } from "@nextui-org/react";
 import { UseDisclosureReturn } from "@nextui-org/use-disclosure";

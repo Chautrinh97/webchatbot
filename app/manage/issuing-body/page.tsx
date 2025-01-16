@@ -7,7 +7,6 @@ import { PaginationComponent } from "@/components/Manage/PaginationComponent";
 import { SearchBarComponent } from "@/components/Manage/SearchBarComponent";
 import { Loading } from "@/components/Others/Loading";
 import { DocumentProperty } from "@/types/chat";
-import { UserPermissionConstant } from "@/utils/constant";
 import { validateSearchParams } from "@/utils/string";
 import { StatusCodes } from "http-status-codes";
 import { Metadata } from "next";
@@ -42,6 +41,7 @@ export default async function IssuingBodyPage(props: { searchParams: Promise<any
       const properties: DocumentProperty[] = propertiesData.data.map((property: any) => ({
          id: property.id,
          name: property.name,
+         acronym: property.acronym,
          description: property.description,
       }));
       const total = propertiesData.total;

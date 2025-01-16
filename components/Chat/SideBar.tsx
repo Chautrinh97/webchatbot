@@ -98,8 +98,8 @@ export const SideBar = (
 
       const imgData = canvas.toDataURL('image/png');
 
-      const marginLeft = 10;
-      const marginRight = 15;
+      const marginLeft = 5;
+      const marginRight = 5;
       const pdf = new jsPDF({
          orientation: 'portrait',
          unit: 'pt',

@@ -19,7 +19,7 @@ import {
    Tooltip,
    Input,
 } from "@nextui-org/react";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DocumentProperty } from "@/types/chat";
 import { useRouter } from "next/navigation";
 import { StatusCodes } from "http-status-codes";
@@ -35,6 +35,8 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
    const [issuingBodies, setIssuingBodies] = useState<DocumentProperty[]>([]);
    const [documentTypes, setDocumentTypes] = useState<DocumentProperty[]>([]);
    const [documentFields, setDocumentFields] = useState<DocumentProperty[]>([]);
+   const [isDataLoaded, setIsDataLoaded] = useState<boolean>(false);
+   const [isInitialLoad, setIsInitialLoad] = useState(true);
    const [isPreview, setIsPreview] = useState<boolean>(false);
    const [file, setFile] = useState<any>(undefined);
    const [url, setUrl] = useState<string>('');
@@ -44,6 +46,7 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
       handleSubmit,
       formState: { errors },
       setValue,
+      reset,
       setError,
       clearErrors,
       watch,
@@ -81,6 +84,11 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
    }
    const fetchDocument = async () => {
       const response = await apiServiceClient.get(`/document/${id}`);
+      if (response.status == StatusCodes.NOT_FOUND) {
+         errorToast('Văn bản không tồn tại. Đang làm mới...');
+         router.refresh();
+         return;
+      }
       const result = await response.json();
       setValue('title', result.title);
       setValue('referenceNumber', result.referenceNumber);
@@ -92,7 +100,35 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
       setValue('issuingBody', result.issuingBody?.id);
       setValue('documentField', result.documentField?.id);
       setValue('documentType', result.documentType?.id);
+
+      setIsDataLoaded(true);
    }
+
+   const documentType = watch('documentType');
+   const issuingBody = watch('issuingBody');
+   const documentField = watch('documentField');
+
+   const generateReferenceNumber = () => {
+      const typeAcronym = documentTypes.find((t) => t.id == documentType)?.acronym || '';
+      const issuingBodyAcronym = issuingBodies.find((ib) => ib.id == issuingBody)?.acronym || '';
+      const fieldAcronym = documentFields.find((f) => f.id == documentField)?.acronym || '';
+      const parts = [typeAcronym, issuingBodyAcronym, fieldAcronym].filter((part) => part != '');
+      return `${parts.join('-')}`;
+   };
+
+   useEffect(() => {
+      console.log(isDataLoaded, isInitialLoad);
+      if (!isDataLoaded || isInitialLoad) return;
+      const refNumber = generateReferenceNumber();
+      setValue('referenceNumber', refNumber);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+   }, [documentType, issuingBody, setValue]);
+
+   useEffect(() => {
+      if (isDataLoaded) {
+         setIsInitialLoad(false);
+      }
+   }, [isDataLoaded]);
 
    const handleOpenModal = async () => {
       try {
@@ -107,6 +143,16 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
          onClose();
          return;
       }
+   }
+
+   const handleCloseModal = () => {
+      setIsPreview(false);
+      setFile(undefined);
+      setUrl('');
+      reset();
+      setIsDataLoaded(false);
+      setIsInitialLoad(true);
+      onClose();
    }
 
    const onSubmit: SubmitHandler<EditDocumentForm> = async (data) => {
@@ -172,13 +218,6 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
          onClose();
          return;
       }
-   }
-
-   const handleCloseModal = () => {
-      setIsPreview(false);
-      setFile(undefined);
-      setUrl('');
-      onClose();
    }
 
    const handleTogglePreview = async () => {
@@ -475,7 +514,7 @@ export const EditDocumentModal = ({ id }: { id: number }) => {
                            {isPreview &&
                               < div
                                  ref={wordPreview}
-                                 className="w-[700px] absolute right-5 h-[600px] overflow-auto px-4 mx-2 border rounded-md">
+                                 className="w-[680px] absolute right-5 h-[600px] overflow-auto px-4 mx-2 border rounded-md">
                                  {file.type === MimeType.PDF &&
                                     <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
                                        <Viewer fileUrl={url} />;

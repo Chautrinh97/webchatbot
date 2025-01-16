@@ -14,7 +14,7 @@ export const AddUserFormSchema = LoginFormSchema.extend({
    authorityGroup: z.string().transform((value) => (value === '' ? null : Number(value))),
 });
 
-export const EditUserSchemaVerified = AddUserFormSchema.omit({password: true});
+export const EditUserSchemaVerified = AddUserFormSchema.omit({ password: true });
 export const EditUserSchemaUnverified = AddUserFormSchema.extend({
    password: z
       .string()
@@ -36,6 +36,9 @@ export const DocumentPropertiesSchema = z.object({
       .string()
       .trim()
       .min(1, { message: 'Tên không được để trống.' }),
+   acronym: z
+      .string()
+      .trim(),
    description: z
       .string()
       .max(1000, { message: 'Mô tả không quá 1000 ký tự.' })
@@ -107,7 +110,7 @@ export const DocumentFormSchema = z.object({
    }
 ).refine(
    ({ validityStatus, invalidDate }) =>
-      !(validityStatus === "false") || invalidDate, 
+      !(validityStatus === "false") || invalidDate,
    {
       message: "Ngày hết hiệu lực là bắt buộc.",
       path: ["invalidDate"],

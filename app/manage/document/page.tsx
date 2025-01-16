@@ -26,6 +26,7 @@ const fetchData = async (
    isRegulatory: string | null,
    isValid: string | null,
    isSync: string | null,
+   year: number | null,
    createdBy: boolean | null,
    token: any,
 ) => {
@@ -40,6 +41,7 @@ const fetchData = async (
       isValid,
       isSync,
       createdBy,
+      year,
    }, {
       Authorization: `Bearer ${token}`,
    });
@@ -68,6 +70,12 @@ const fetchDocumentTypes = async (token: any) => {
    const response = await apiService.get(`/document-type`, {
       isExport: true,
    }, {
+      Authorization: `Bearer ${token}`,
+   });
+   return response;
+}
+const fetchIssuanceYear = async (token: any) => {
+   const response = await apiService.get(`/document/year`, {}, {
       Authorization: `Bearer ${token}`,
    });
    return response;
@@ -116,6 +124,7 @@ const validateSearchParams = (params: any) => {
       isValid,
       isSync,
       createdBy,
+      year,
    } = params;
 
    const isNumberOrNull = (value: any) =>
@@ -134,6 +143,7 @@ const validateSearchParams = (params: any) => {
       isValid: isBooleanStringValue(isValid),
       isSync: isBooleanStringValue(isSync),
       createdBy: isCreatedByValue(createdBy),
+      year: isNumberOrNull(year) ? parseInt(year) : null,
    };
 };
 
@@ -151,12 +161,14 @@ export default async function DocumentPage(props: { searchParams: Promise<any> }
       isValid,
       isSync,
       createdBy,
+      year,
    } = validateSearchParams(searchParams);
 
    try {
       const responseIssuingBodies = await fetchIssuingBodies(token);
       const responseDocumentFields = await fetchDocumentFields(token);
       const responseDocumentTypes = await fetchDocumentTypes(token);
+      const responseIssuanceYears = await fetchIssuanceYear(token);
       const responseDocuments =
          await fetchData(
             searchKey,
@@ -168,14 +180,15 @@ export default async function DocumentPage(props: { searchParams: Promise<any> }
             isRegulatory,
             isValid,
             isSync,
+            year,
             createdBy,
             token,
          );
-
       if (
          responseDocuments.status !== StatusCodes.OK ||
          responseIssuingBodies.status !== StatusCodes.OK ||
          responseDocumentFields.status !== StatusCodes.OK ||
+         responseIssuanceYears.status !== StatusCodes.OK ||
          responseDocumentTypes.status !== StatusCodes.OK
       ) {
          return (
@@ -189,7 +202,8 @@ export default async function DocumentPage(props: { searchParams: Promise<any> }
       const issuingBodiesData = await responseIssuingBodies.json();
       const documentFieldsData = await responseDocumentFields.json();
       const documentTypesData = await responseDocumentTypes.json();
-
+      
+      const issuanceYears = await responseIssuanceYears.json();
       const issuingBodies = mapProperty(issuingBodiesData.data);
       const documentFields = mapProperty(documentFieldsData.data);
       const documentTypes = mapProperty(documentTypesData.data);
@@ -212,7 +226,9 @@ export default async function DocumentPage(props: { searchParams: Promise<any> }
                      documentTypes={documentTypes}
                      isRegulatory={isRegulatory ? isRegulatory : ""}
                      isValid={isValid ? isValid : ""}
-                     isSync={isSync ? isSync : ""} />
+                     isSync={isSync ? isSync : ""} 
+                     year={year || 0} 
+                     issuanceYears={issuanceYears} />
                   <div className="flex flex-col justify-between items-center">
                      <AddDocumentModal />
                      <CreatedByFilter createdBy={createdBy === 'true' ? true : false} />

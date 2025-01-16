@@ -118,6 +118,25 @@ export const EditDocumentPropertiesModal = (
                                  }
                               </div>
                               <div className="sm:col-span-4">
+                                 <label htmlFor="name" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
+                                    Từ viết tắt {propertyText}
+                                 </label>
+                              </div>
+                              <div className="sm:col-span-8">
+                                 <div className="border border-gray-500 dark:border-neutral-600 rounded-md">
+                                    <input
+                                       {...register("acronym")}
+                                       type="text"
+                                       className="py-2 px-3 block w-full bg-gray-100 text-sm rounded-md focus:border-blue-500 focus:ring-blue-500 disabled:opacity-50 disabled:pointer-events-none dark:bg-neutral-700 dark:placeholder-neutral-500 dark:focus:ring-neutral-600"
+                                       placeholder={`Nhập từ viết tắt ${propertyText}`} />
+                                 </div>
+                                 {errors.acronym?.message &&
+                                    <div className="ps-2 flex text-[11px] text-red-600 py-2">
+                                       <TbAlertCircle className="me-1" /> {errors.acronym?.message}
+                                    </div>
+                                 }
+                              </div>
+                              <div className="sm:col-span-4">
                                  <label htmlFor="description" className="inline-block text-sm text-gray-800 mt-2.5 dark:text-neutral-200">
                                     Mô tả
                                  </label>

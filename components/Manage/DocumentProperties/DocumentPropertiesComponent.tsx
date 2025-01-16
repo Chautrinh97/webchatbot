@@ -1,6 +1,4 @@
 import { DocumentProperty } from "@/types/chat";
-import { EditDocumentPropertiesModal } from "./EditDocumentPropertiesModal";
-import { DeleteDocumentPropertiesModal } from "./DeleteDocumentPropertiesModal";
 import { DocumentPropertiesActionComponent } from "./DocumentPropertiesActionComponent";
 
 export const DocumentPropertiesComponent = (
@@ -30,6 +28,7 @@ export const DocumentPropertiesComponent = (
                      <tr className="divide-x divide-gray-300 dark:divide-neutral-500">
                         <th scope="col" className="px-6 py-3 text-start font-medium uppercase w-2">Số thứ tự</th>
                         <th scope="col" className="px-6 py-3 text-start font-medium uppercase w-96">Tên</th>
+                        <th scope="col" className="px-6 py-3 text-start font-medium uppercase">Từ viết tắt</th>
                         <th scope="col" className="px-6 py-3 text-start font-medium uppercase">Mô tả</th>
                         <th scope="col" className="px-6 py-3 text-start font-medium uppercase w-20">Tác vụ</th>
                      </tr>
@@ -41,6 +40,7 @@ export const DocumentPropertiesComponent = (
                               <tr className="hover:bg-gray-100 dark:hover:bg-neutral-700/50 divide-x dark:divide-neutral-600" key={property.id}>
                                  <td className="px-12 py-4 whitespace-normal text-sm font-semibold text-gray-800 dark:text-neutral-200">{pageLimit * (pageNumber - 1) + index + 1}</td>
                                  <td className="px-6 py-4 whitespace-normal text-sm font-medium text-gray-800 dark:text-neutral-200">{property.name}</td>
+                                 <td className="px-6 py-4 whitespace-normal text-sm font-medium text-gray-800 dark:text-neutral-200">{property.acronym}</td>
                                  <td className="px-6 py-4 whitespace-normal text-sm text-gray-800 dark:text-neutral-200">{property.description}</td>
                                  <td className="px-6 py-4 my-2 text-center">
                                     <div className="flex flex-col justify-center items-center gap-2">

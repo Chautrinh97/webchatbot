@@ -1,17 +1,17 @@
 "use client"
 import { useUserStore } from "@/app/store/user.store";
 import { errorToast, successToast } from "@/utils/toast";
-import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, useDisclosure, ModalContent, Modal, ModalBody, ModalHeader, Divider, Button, ModalFooter } from "@nextui-org/react";
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem, useDisclosure } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { FaSignOutAlt } from "react-icons/fa";
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
-import { TbUserEdit, TbUserCircle, TbChevronUp, TbLogin } from "react-icons/tb"
+import { TbUserEdit, TbUserCircle, TbChevronUp } from "react-icons/tb"
 import { ManageAccountModal } from "../Auth/ManageAccountModal";
 
 export const SidebarOptionButton: React.FC = () => {
    const router = useRouter();
-   const { user, isLoggedIn } = useUserStore();
+   const { user } = useUserStore();
    const [openOption, setOpenOption] = useState<boolean>(false);
    const accountModal = useDisclosure();
 

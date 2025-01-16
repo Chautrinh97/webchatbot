@@ -42,6 +42,7 @@ export default async function DocumentFieldPage(props: { searchParams: Promise<a
       const properties: DocumentProperty[] = propertiesData.data.map((property: any) => ({
          id: property.id,
          name: property.name,
+         acronym: property.acronym,
          description: property.description,
       }));
       const total = propertiesData.total;
